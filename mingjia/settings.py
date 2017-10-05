@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 Django settings for mingjia project.
 
@@ -114,8 +115,8 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_L10N = True
-
-USE_TZ = True
+#  设置为True时会出现 -> 'datetime.date' object has no attribute 'tzinfo'
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

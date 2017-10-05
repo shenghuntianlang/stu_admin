@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
 #   * Rearrange models' order
@@ -172,11 +173,12 @@ class Student(models.Model):
     phone = models.CharField(max_length=20, blank=True, null=True)
     entrance_time = models.DateTimeField(blank=True, null=True)
     school_name = models.CharField(max_length=104, blank=True, null=True)
+    class_name = models.IntegerField(blank=True, null=True)
     grade = models.CharField(max_length=2, blank=True, null=True)
     course = models.ForeignKey(Course, models.DO_NOTHING, blank=True, null=True)
-    register_date = models.DateTimeField(blank=True, null=True, auto_now=True)
+    register_date = models.DateTimeField(blank=True, null=True)
     remark = models.CharField(max_length=50, blank=True, null=True)
-    is_delete = models.IntegerField(blank=True, null=True)
+    is_delete = models.IntegerField(blank=True, null=True, default=0)
 
     class Meta:
         managed = False

@@ -23,7 +23,11 @@ urlpatterns = [
     url(r'^index/$', views.index),
     url(r'^login/$', views.login),
     url(r'^login_handle/$', views.login_handle),
+    url(r'^log_out/$', views.log_out),
     url(r'^index', views.index),
     url(r'^admin_add/$', views.admin_add),
-    url(r'^admin_add_handle/$', views.admin_add_handle)
+    url(r'^admin_add_handle/$', views.admin_add_handle),
+    url(r'^admin_student/$', views.admin_student_manager),
+    url(r'^admin_edit/$', views.admin_edit),
+    url(r'^get_students/(\d+)$', views.get_students)
 ]
