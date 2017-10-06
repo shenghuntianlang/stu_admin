@@ -29,5 +29,7 @@ urlpatterns = [
     url(r'^admin_add_handle/$', views.admin_add_handle),
     url(r'^admin_student/$', views.admin_student_manager),
     url(r'^admin_edit/$', views.admin_edit),
-    url(r'^get_students/(\d+)$', views.get_students)
+    url(r'^get_students/(\d*)$', views.get_students),
+    url(r'^del_student/(\d+)$', views.del_student),
+    url(r'^del_students/',views.del_students)
 ]
