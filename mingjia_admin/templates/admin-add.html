@@ -110,11 +110,19 @@
             <label class="layui-form-label">所在班次</label>
             <div class="layui-input-inline">
                 <select name="course_id" lay-verify="required">
-                    <option value=""></option>
-                    <option value="0">none</option>
-                    <option value="1">one</option>
-                    <option value="2">two</option>
-                    <option value="3">three</option>
+
+
+                    {% for course in courses %}
+
+                        <option {% if course.id == 0 %}
+
+                            selected
+
+                        {% endif %}
+
+                            value={{ course.id }}> {{ course.name }}</option>
+
+                    {% endfor %}
                 </select>
             </div>
         </div>

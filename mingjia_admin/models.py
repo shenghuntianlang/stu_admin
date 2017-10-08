@@ -107,9 +107,13 @@ class Course(models.Model):
     remark = models.CharField(max_length=54, blank=True, null=True)
     is_delete = models.IntegerField(blank=True, null=True)
 
+    def __str__(self):
+        return self.name
     class Meta:
         managed = False
         db_table = 'course'
+
+
 
 
 class DjangoAdminLog(models.Model):
@@ -183,6 +187,7 @@ class Student(models.Model):
     class Meta:
         managed = False
         db_table = 'student'
+
 
 
 class Teacher(models.Model):
