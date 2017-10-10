@@ -27,40 +27,39 @@
     <form class="layui-form">
 
         <div class="layui-form-item">
-            <label for="teacher_name" class="layui-form-label">
-                <span class="x-red">*</span>教师姓名
+            <label for="course_year" class="layui-form-label">
+                <span class="x-red">*</span>班次所在年份
             </label>
             <div class="layui-input-inline">
-                <input type="text" id="teacher_name" name="teacher_name" required="" lay-verify="required"
+                <input type="text" id="course_year" name="course_year" required="" lay-verify="year"
                        autocomplete="off" class="layui-input">
             </div>
         </div>
 
         <div class="layui-form-item">
 
-            <label for="gender" class="layui-form-label">
-                <span class="x-red">*</span>性别
+            <label for="course_season" class="layui-form-label">
+                <span class="x-red">*</span>班次所在季节
             </label>
-
-            <div id="gender" class="layui-input-inline">
-
-                <input type="radio" name="gender" value="男" title="男" checked>
-                <input type="radio" name="gender" value="女" title="女">
-
+            <div class="layui-inline">
+                <select id="course_season" name="course_season" lay-verify="required">
+                    <option value="春季">春季</option>
+                    <option value="夏季">夏季</option>
+                    <option value="秋季">秋季</option>
+                    <option value="冬季">冬季</option>
+                </select>
             </div>
-
-
         </div>
 
 
         <div class="layui-form-item">
 
-            <label for="entrance_time" class="layui-form-label">
-                <span class="x-red">*</span>入职时间
+            <label for="course_name" class="layui-form-label">
+                <span class="x-red">*</span>班次名称
             </label>
 
             <div class="layui-input-inline"> <!-- 注意：这一层元素并不是必须的 -->
-                <input type="text" class="layui-input" id="entrance_time" name="entrance_time" lay-verify="date"
+                <input type="text" class="layui-input" id="course_name" name="course_name"
                        required="">
             </div>
 
@@ -69,53 +68,41 @@
 
 
         <div class="layui-form-item">
-            <label for="identity" class="layui-form-label">
-                <span class="x-red">*</span>身份证号码
+            <label for="teacher_id" class="layui-form-label">
+                <span class="x-red">*</span>任课教师
             </label>
-            <div class="layui-input-inline">
-                <input type="number" id="identity" name="identity" lay-verify="identity"
-                       autocomplete="off" class="layui-input">
-            </div>
-        </div>
-
-        <div class="layui-form-item">
-            <label for="phone" class="layui-form-label">
-                <span class="x-red">*</span>联系方式
-            </label>
-            <div class="layui-input-inline">
-                <input type="text" id="phone" name="phone" lay-verify="phone"
-                       autocomplete="off" class="layui-input">
-            </div>
-        </div>
-
-        <div class="layui-form-item">
-            <label class="layui-form-label">教育背景</label>
-            <div class="layui-input-inline">
-                <select name="edu" lay-verify="required">
-
-                    {% for e in edu %}
-
-
-                        <option value="{{ e }}"> {{ e }} </option>
-
+            <div class="layui-inline">
+                <select id="teacher_id" name="teacher_id" lay-search lay-verify="required">
+                    {% for teacher in teachers %}
+                        <option value={{ teacher.id }}>{{ teacher.name }}</option>
                     {% endfor %}
+
+
                 </select>
             </div>
         </div>
 
         <div class="layui-form-item">
-            <label for="english_level" class="layui-form-label">英语水平</label>
-            <div class="layui-input-inline">
-                <select name="english_level" lay-verify="required">
-
-                    {% for e in english_level %}
-
-
-                        <option value="{{ e }}"> {{ e }} </option>
-
+            <label for="class_id" class="layui-form-label">
+                <span class="x-red">*</span>班次地点(所在教室)
+            </label>
+            <div class="layui-inline">
+                <select id="class_id" name="class_id" lay-verify="required">
+                    {% for classroom in classrooms %}
+                        <option value={{ classroom.id }}>{{ classroom.name }}-{{ classroom.school.school_name }}</option>
                     {% endfor %}
-
                 </select>
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label for="course_time" class="layui-form-label">
+                <span class="x-red">*</span>班次上课时间
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="course_time" name="course_time" required=""
+                       autocomplete="off" class="layui-input">
             </div>
         </div>
 
@@ -191,7 +178,8 @@
     layui.use('laydate', function () {
         var laydate = layui.laydate;
         laydate.render({
-            elem: '#entrance_time' //指定元素
+            elem: '#course_year', //指定元素
+            type: 'year'
         });
     });
 

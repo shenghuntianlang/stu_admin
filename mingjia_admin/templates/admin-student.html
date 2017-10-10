@@ -134,21 +134,7 @@
     {% endfor %}
     </tbody>
 </table>
-<div class="page">
-    {% if not is_search %}
-        <div>
-            <a class="prev" href="/admin_student/{{ page_index|add:'-1' }}" onclick="load_page()">&lt;&lt;</a>
-
-            <a class="num " href="/admin_student/{{ page_index }}">{{ page_index }}</a>
-
-            <a class="next" href="/admin_student/{{ page_index|add:'1' }}">&gt;&gt;</a>
-
-            &nbsp;&nbsp;共 {{ max_page }} 页
-        </div>
-
-    {% endif %}
-
-
+<div class="page" id="page">
 </div>
 
 </div>
@@ -166,6 +152,33 @@
             elem: '#end' //指定元素
         });
     });
+
+    layui.use('laypage', function () {
+
+        var laypage = layui.laypage;
+
+        //执行一个laypage实例
+        laypage.render({
+
+            elem: 'page'
+            , count: {{ total }}
+            , limit: {{ limit }}
+            , curr: {{ page_index }}
+            , jump: function (obj, first) {
+
+                if (!first) {
+
+                    window.location.href = '/admin_student/'+obj.curr;
+
+                }
+
+
+            }
+
+        })
+
+
+    })
 
 
     /* 用户-删除*/

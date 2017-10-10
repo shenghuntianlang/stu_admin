@@ -38,32 +38,58 @@
 <div class="layui-row">
 
 
-    <form class="layui-form  x-so" METHOD="get" ACTION="/get_students/" accept-charset="UTF-8">
+    <form class="layui-form  x-so" METHOD="get" ACTION="/get_teachers/" accept-charset="UTF-8">
 
-        <label class="layui-label">班次:&nbsp;&nbsp;</label>
+
+        <label class="layui-label">&nbsp;&nbsp;员工号:&nbsp;&nbsp; </label>
+        <input type="text" name="id" placeholder="员工号" value="{{ search_params.id }}"
+               autocomplete="off" class="layui-input">
+
+        <label class="layui-label">&nbsp;&nbsp;姓名: &nbsp;&nbsp;</label>
+        <input type="text" name="name" placeholder="姓名" value="{{ search_params.name__contains }}"
+               autocomplete="off" class="layui-input">
+
+        <label class="layui-label">学历:&nbsp;&nbsp;</label>
         <div class="layui-input-inline">
-            <select name="course_id" lay-verify="required">
-                {% for course in courses %}
+            <select name="edu" lay-verify="required">
+                <option value=''></option>
+                {% for e in edu %}
 
-                    {% if course.id == search_params.course_id %}
-                        <option selected value={{ course.id }}>{{ course.name }}</option>
+                    {% if e == search_params.edu__contains %}
+
+                        <option selected value={{ e }}>{{ e }}</option>
+
                     {% else %}
-                        <option value={{ course.id }}>{{ course.name }}</option>
+                        <option value={{ e }}>{{ e }}</option>
+                    {% endif %}
+
+                {% endfor %}
+            </select>
+        </div>
+
+
+        <label class="layui-label">英语水平:&nbsp;&nbsp;</label>
+        <div class="layui-input-inline">
+            <select name="english_level" lay-verify="required">
+
+                <option value=''></option>
+
+                {% for e in english_level %}
+
+
+                       {% if e == search_params.english_level__contains %}
+
+                        <option selected value={{ e }}>{{ e }}</option>
+
+                    {% else %}
+                        <option value={{ e }}>{{ e }}</option>
                     {% endif %}
 
 
                 {% endfor %}
             </select>
         </div>
-        <label class="layui-label">&nbsp;&nbsp;学校:&nbsp;&nbsp; </label>
-        <input type="text" name="school_name" placeholder="学校" value="{{ search_params.school_name__contains }}"
-               autocomplete="off" class="layui-input">
-        <label class="layui-label">&nbsp;&nbsp;手机号码: &nbsp;&nbsp;</label>
-        <input type="number" name="phone" placeholder="手机号码" value="{{ search_params.phone__contains }}"
-               autocomplete="off" class="layui-input">
-        <label class="layui-label">&nbsp;&nbsp;姓名: &nbsp;&nbsp;</label>
-        <input type="text" name="name" placeholder="姓名" value="{{ search_params.name__contains }}"
-               autocomplete="off" class="layui-input">
+
 
         <button class="layui-btn" lay-filter="sreach"><i class="layui-icon">&#xe615;</i>
         </button>
@@ -74,7 +100,6 @@
 </div>
 
 <xblock>
-    <button class="layui-btn layui-btn-danger" onclick="del_all()"><i class="layui-icon"></i>批量删除</button>
     <button class="layui-btn" onclick="x_admin_show('添加用户','./admin-add.html')"><i class="layui-icon"></i>打印显示学员信息
     </button>
     <span class="x-right" style="line-height:40px">共有数据：{{ total }}条</span>
@@ -84,48 +109,47 @@
 <table class="layui-table">
     <thead>
     <tr>
-        <th>
-            <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i
-                    class="layui-icon">&#xe605;</i></div>
-        </th>
-        <th>学号</th>
+
+        <th>员工号</th>
         <th>姓名</th>
         <th>性别</th>
-        <th>所在班次</th>
+        <th>身份证号</th>
         <th>电话</th>
-        <th>所在小学</th>
-        <th>年级</th>
-        <th>班级</th>
-        <th>报名时间</th>
+        <th>出生日期</th>
+        <th>学历</th>
+        <th>英语水平</th>
+        <th>入职时间</th>
+        <th>离职时间</th>
+        <th>状态</th>
         <th>备注</th>
         <th>操作</th>
     </thead>
     <tbody>
-    {% for student in students %}
+    {% for teacher in teachers %}
         <tr>
-
-            <td id="check">
-                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='{{ student.id }}'><i
-                        class="layui-icon">&#xe605;</i>
-                </div>
-            </td>
-            <td id="id"> {{ student.id }}</td>
-            <td id="name">{{ student.name }}</td>
-            <td id="gender">{{ student.gender }}</td>
-            <td id="course_name">{{ student.course.name }}</td>
-            <td id="phone">{{ student.phone }}</td>
-            <td id="school_name">{{ student.school_name }}</td>
-            <td id="grade">{{ 3 }}</td>
-            <td id="class_name">{{ student.class_name }}</td>
-            <td id="register">{{ student.register_date }}</td>
-            <td id="remark">{{ student.remark }}</td>
-
+            <td id="id"> {{ teacher.id }}</td>
+            <td id="name">{{ teacher.name }}</td>
+            <td id="gender">{{ teacher.gender }}</td>
+            <td id="identity">{{ teacher.id_number }}</td>
+            <td id="phone">{{ teacher.phone }}</td>
+            <td id="birthday">{{ teacher.birthday }}</td>
+            <td id="edu">{{ teacher.edu }}</td>
+            <td id="english_level">{{ teacher.english_level }}</td>
+            <td id="entry_date">{{ teacher.entry_date }}</td>
+            <td id="leave_date">{{ teacher.leave_date }}</td>
+            <td id="curr_state">{% if teacher.leave_date == "" %}
+                在职
+            {% else %}
+                离职
+            {% endif %}</td>
+            <td id="remark">{{ teacher.remark }}</td>
             <td class="td-manage">
+
                 <a title="编辑" onclick="x_admin_show('编辑','/admin_student_edit/{{ student.id }}')" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
-                <a title="删除" onclick="member_del(this,{{ student.id }})" href="javascript:;">
-                    <i class="layui-icon">&#xe640;</i>
+                <a title="编辑" onclick="x_admin_show('编辑','/admin_student_edit/{{ student.id }}')" href="javascript:;">
+                    <i class="layui-icon">&#xe642;</i>
                 </a>
             </td>
 
@@ -134,22 +158,15 @@
     {% endfor %}
     </tbody>
 </table>
-<div class="page">
-    {% if not is_search %}
-        <div>
-            <a class="prev" href="/admin_student/{{ page_index|add:'-1' }}" onclick="load_page()">&lt;&lt;</a>
 
-            <a class="num " href="/admin_student/{{ page_index }}">{{ page_index }}</a>
+{% if is_search == False %}
 
-            <a class="next" href="/admin_student/{{ page_index|add:'1' }}">&gt;&gt;</a>
+    <div class="page" id="page">
+    </div>
 
-            &nbsp;&nbsp;共 {{ max_page }} 页
-        </div>
-
-    {% endif %}
+{% endif %}
 
 
-</div>
 
 </div>
 <script>
@@ -166,6 +183,39 @@
             elem: '#end' //指定元素
         });
     });
+
+
+    {% if is_search == False %}
+        layui.use('laypage', function () {
+
+            var laypage = layui.laypage;
+
+            //执行一个laypage实例
+            laypage.render({
+
+                elem: 'page'
+                , count: {{ total }}
+                , limit: {{ limit }}
+                , curr: {{ page_index }}
+                , jump: function (obj, first) {
+
+
+                    if (!first) {
+
+                        console.log('选中的页->' + obj.curr)
+                        window.location.href = '/admin_teacher_manager/' + obj.curr
+
+                    }
+
+
+                }
+
+            })
+
+
+        })
+    {% endif %}
+
 
 
     /* 用户-删除*/
@@ -195,46 +245,6 @@
                 }
 
             })
-
-        });
-    }
-
-    /* 批量删除 */
-    function del_all(argument) {
-
-        var data = tableCheck.getData();
-
-        var json = JSON.stringify(data)
-
-        layer.confirm('确认要删除吗？' + data, function (index) {
-            //捉到所有被选中的，发异步进行删除
-
-
-            $.ajax({
-
-                'url': '/del_students/',
-                'type': 'post',
-                'data': json,
-                'success': function (data) {
-
-
-                    if (data.result == 'success') {
-
-                        $(".layui-form-checked").not('.header').parents('tr').remove();
-                        layer.msg('删除成功', {icon: 1});
-                        refresh()
-
-                    } else {
-
-                        layer.msg('删除失败', {icon: 2});
-                        refresh()
-                    }
-
-
-                }
-
-            })
-
 
         });
     }

@@ -39,8 +39,7 @@ def log_out(request):
     退出登录
 
     """
-
-    response = HttpResponseRedirect(redirect_to='/login/')
+    response = HttpResponseRedirect(redirect_to='/user/')
     response.delete_cookie(KEY)
     return response
 
@@ -120,8 +119,9 @@ def admin_add_handle(request):
 
 
 def admin_student_manager(request, page_index=1):
+    limit = 10
     students = Student.objects.filter(is_delete=0)
-    paginator = Paginator(students, 10)
+    paginator = Paginator(students, limit)
     # 当前页面的内容
     page = paginator.page(int(page_index))
     for p in page:
@@ -131,6 +131,7 @@ def admin_student_manager(request, page_index=1):
     print(len(page_range))
     context = {'students': page,
                'courses': get_courses(),
+               'limit': limit,
                'total': students.count(),
                'page_index': page_index,
                'page_range': page_range,
@@ -140,7 +141,7 @@ def admin_student_manager(request, page_index=1):
     return render(request, 'admin-student.html', context=context)
 
 
-def get_search_params(request):
+def get_search_students_params(request):
     """
     获取查询学生信息时，传递过来的查询参数
     :param request:
@@ -164,9 +165,12 @@ def get_students(request, page_index=1):
     students = None
     # 搜索
     # if not page_index.strip() and len(request.GET.keys()) > 0:
-    search_params = get_search_params(request)
+    search_params = get_search_students_params(request)
     # search_params1 = {'course_id': 1, 'name__contains': '王', 'is_delete': 0}
     students = Student.objects.filter(**search_params)
+    for s in students:
+        s.register_date = s.register_date.strftime("%Y-%m-%d")
+
     search_params['course_id'] = long(search_params['course_id'])
     context = {'students': students,
                'courses': get_courses(),
@@ -250,7 +254,10 @@ def admin_student_edit_handle(request):
 
 
 def admin_teacher_add(request):
-    return render_to_response('admin-teacher-add.html')
+    context = {'edu': get_edu(),
+               'english_level': get_english_level()
+               }
+    return render(request, 'admin-teacher-add.html', context)
 
 
 def get_birthday(identity):
@@ -292,7 +299,118 @@ def admin_teacher_add_handle(request):
 
 
 def admin_teacher_manager(request, page_index=1):
-    return render_to_response('admin-teacher.html')
+    # 每页显示的条数
+    limit = 3
+    # 获取所有的教师信息
+    teachers = Teacher.objects.all()
+
+    for t in teachers:
+        t.birthday = t.birthday.strftime("%Y-%m-%d")
+        t.entry_date = t.entry_date.strftime("%Y-%m-%d")
+        if t.leave_date != None:
+            t.leave_date = t.leave_date.strftime("%Y-%m-%d")
+        else:
+            t.leave_date = ""
+
+    # 数据总数
+    total = teachers.count()
+    paginator = Paginator(teachers, limit)
+    # 获取当前页显示的内容
+    curr_page = paginator.page(page_index)
+
+    context = {'teachers': curr_page,
+               'page_index': page_index,
+               'limit': limit,
+               'total': total,
+               'edu': get_edu(),
+               'is_search': False,
+               'english_level': get_english_level()
+               }
+
+    return render(request, 'admin-teacher.html', context)
+
+
+def get_search_teachers_params(request):
+    search_params = {}
+    for key in request.GET.keys():
+        value = request.GET[key]
+        if value.strip():
+            if key != 'id':
+                search_params[key + "__contains"] = value
+            else:
+                search_params[key] = value
+    return search_params
+
+
+def get_teachers(request):
+    '''
+    教师信息检索
+    :param request:
+    :return:
+    '''
+    search_params = get_search_teachers_params(request)
+    print(search_params)
+    teachers = Teacher.objects.all().filter(**search_params)
+    print(teachers.count())
+    context = {'teachers': teachers,
+               'total': teachers.count(),
+               'edu': get_edu(),
+               'is_search': True,
+               'search_params': search_params,
+               'english_level': get_english_level()
+               }
+
+    for t in teachers:
+        t.birthday = t.birthday.strftime("%Y-%m-%d")
+        t.entry_date = t.entry_date.strftime("%Y-%m-%d")
+        if t.leave_date != None:
+            t.leave_date = t.leave_date.strftime("%Y-%m-%d")
+        else:
+            t.leave_date = ""
+
+    print(search_params)
+
+    return render(request, 'admin-teacher.html', context)
+
+
+def admin_add_course(request):
+    classrooms = Classroom.objects.all()
+    teachers = Teacher.objects.all()
+    context = {'classrooms': classrooms,
+               'teachers': teachers,
+               'season': get_season()
+               }
+
+    return render(request, 'admin-course-add.html', context)
+
+
+@csrf_exempt
+def admin_add_course_handle(request):
+    print(request.body)
+
+    course_info = json.loads(request.body, 'utf-8')
+
+    teacher = Teacher.objects.get(id=course_info['teacher_id'])
+
+    course = Course()
+
+    course_name = course_info['course_year'] + \
+                  course_info['course_season'] + \
+                  teacher.name + course_info['course_name']
+
+    course.name = course_name
+    course.class_field_id = course_info['class_id']
+    course.time = course_info['course_time']
+    course.teacher_id = course_info['teacher_id']
+    course.remark = course_info['remark']
+
+    course.save()
+
+    resp = Response()
+    resp.status = 200
+    resp.result = 'success'
+
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
 class Response:
@@ -312,3 +430,15 @@ class DateTimeEncoder(json.JSONEncoder):
         else:
             return json.JSONEncoder.default(self, obj)
             # {u'course_id': u'2', u'school_name__contains': u'\u51af', u'is_delete': 0}
+
+
+def get_season():
+    return ['春季', '夏季', '秋季', '冬季']
+
+
+def get_edu():
+    return ['初中', '高中', '大专', '本科', '硕士研究生', '博士研究生']
+
+
+def get_english_level():
+    return ['英语四级', '英语六级', '专业四级', '专业八级']

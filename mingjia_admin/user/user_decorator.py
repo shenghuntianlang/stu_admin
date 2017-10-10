@@ -8,9 +8,9 @@ def login(func):
         if 'username' in request.COOKIES.keys():
             admin = Admin.objects.all().filter(name=request.COOKIES['username'])
             if admin.count() != 1:
-                return HttpResponseRedirect('/login/')
+                return HttpResponseRedirect('/user/')
         else:
-            return HttpResponseRedirect('/login/')
+            return HttpResponseRedirect('/user/')
         print ' func(request)被执行'
         return func(request)
     return login_fun

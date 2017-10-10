@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
 #   * Rearrange models' order
@@ -87,9 +86,9 @@ class AuthUserUserPermissions(models.Model):
 
 
 class Classroom(models.Model):
-    class_name = models.CharField(max_length=54, blank=True, null=True)
+    name = models.CharField(max_length=54, blank=True, null=True)
     places = models.IntegerField(blank=True, null=True)
-    school_id = models.IntegerField(blank=True, null=True)
+    school = models.ForeignKey('School', models.DO_NOTHING, blank=True, null=True)
     remark = models.CharField(max_length=104, blank=True, null=True)
     is_delete = models.IntegerField(blank=True, null=True)
 
@@ -102,18 +101,13 @@ class Course(models.Model):
     name = models.CharField(max_length=54, blank=True, null=True)
     time = models.CharField(max_length=54, blank=True, null=True)
     teacher = models.ForeignKey('Teacher', models.DO_NOTHING, blank=True, null=True)
-    class_field = models.ForeignKey(Classroom, models.DO_NOTHING, db_column='class_id', blank=True,
-                                    null=True)  # Field renamed because it was a Python reserved word.
+    class_field = models.ForeignKey(Classroom, models.DO_NOTHING, db_column='class_id', blank=True, null=True)  # Field renamed because it was a Python reserved word.
     remark = models.CharField(max_length=54, blank=True, null=True)
     is_delete = models.IntegerField(blank=True, null=True)
 
-    def __str__(self):
-        return self.name
     class Meta:
         managed = False
         db_table = 'course'
-
-
 
 
 class DjangoAdminLog(models.Model):
@@ -175,19 +169,18 @@ class Student(models.Model):
     name = models.CharField(max_length=24, blank=True, null=True)
     gender = models.CharField(max_length=2, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    entrance_time = models.DateTimeField(blank=True, null=True)
+    entrance_time = models.DateField(blank=True, null=True)
     school_name = models.CharField(max_length=104, blank=True, null=True)
     class_name = models.IntegerField(blank=True, null=True)
     grade = models.CharField(max_length=2, blank=True, null=True)
     course = models.ForeignKey(Course, models.DO_NOTHING, blank=True, null=True)
-    register_date = models.DateTimeField(blank=True, null=True)
+    register_date = models.DateField(blank=True, null=True)
     remark = models.CharField(max_length=50, blank=True, null=True)
-    is_delete = models.IntegerField(blank=True, null=True, default=0)
+    is_delete = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'student'
-
 
 
 class Teacher(models.Model):
