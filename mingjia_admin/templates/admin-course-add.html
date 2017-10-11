@@ -31,7 +31,7 @@
                 <span class="x-red">*</span>班次所在年份
             </label>
             <div class="layui-input-inline">
-                <input type="text" id="course_year" name="course_year" required="" lay-verify="year"
+                <input type="text" id="course_year" name="course_year" required="" lay-verify="year|required"
                        autocomplete="off" class="layui-input">
             </div>
         </div>
@@ -60,7 +60,7 @@
 
             <div class="layui-input-inline"> <!-- 注意：这一层元素并不是必须的 -->
                 <input type="text" class="layui-input" id="course_name" name="course_name"
-                       required="">
+                       lay-verify="required">
             </div>
 
 
@@ -73,10 +73,13 @@
             </label>
             <div class="layui-inline">
                 <select id="teacher_id" name="teacher_id" lay-search lay-verify="required">
-                    {% for teacher in teachers %}
-                        <option value={{ teacher.id }}>{{ teacher.name }}</option>
-                    {% endfor %}
 
+                    <option value=''></option>
+                    {% for teacher in teachers %}
+
+                        <option value={{ teacher.id }}>{{ teacher.name }}</option>
+
+                    {% endfor %}
 
                 </select>
             </div>
@@ -101,7 +104,7 @@
                 <span class="x-red">*</span>班次上课时间
             </label>
             <div class="layui-input-inline">
-                <input type="text" id="course_time" name="course_time" required=""
+                <input type="text" id="course_time" name="course_time" lay-verify="required"
                        autocomplete="off" class="layui-input">
             </div>
         </div>

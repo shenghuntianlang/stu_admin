@@ -376,6 +376,10 @@ def get_teachers(request):
 def admin_add_course(request):
     classrooms = Classroom.objects.all()
     teachers = Teacher.objects.all()
+
+    for t in teachers:
+        print(t.name)
+
     context = {'classrooms': classrooms,
                'teachers': teachers,
                'season': get_season()
@@ -411,6 +415,22 @@ def admin_add_course_handle(request):
     resp.result = 'success'
 
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
+def admin_course_manager(request, index=1):
+    limit = 3
+    courses = Course.objects.all().filter(is_delete=0)
+    print(courses.count())
+    paginator = Paginator(courses, limit)
+    page = paginator.page(index)
+
+    context = {'courses': courses,
+               'limit': limit,
+               'index': index,
+               'total': len(courses)
+               }
+
+    return render(request, 'admin-course.html', context)
 
 
 class Response:

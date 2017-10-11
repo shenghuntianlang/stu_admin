@@ -28,7 +28,6 @@ urlpatterns = [
     url(r'^admin_add/$', views.admin_add),
     url(r'^admin_add_handle/$', views.admin_add_handle),
     url(r'^admin_student/(\d*)$', views.admin_student_manager),
-
     url(r'^admin_student_edit/(\d+)$', views.admin_student_edit),
     url(r'^admin_student_edit_handle/$', views.admin_student_edit_handle),
     url(r'^get_students/(\d*)$', views.get_students),
@@ -39,8 +38,7 @@ urlpatterns = [
     url(r'^admin_teacher_manager/(\d+)$', views.admin_teacher_manager),
     url(r'^get_teachers/$', views.get_teachers),
     url(r'^admin_add_course/$', views.admin_add_course),
-    url(r'^admin_course_add_handle/$', views.admin_add_course_handle)
-
-
+    url(r'^admin_course_add_handle/$', views.admin_add_course_handle),
+    url(r'^admin_course_manager/(\d*)$', views.admin_course_manager)
 
 ]
