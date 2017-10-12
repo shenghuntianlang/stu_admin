@@ -168,6 +168,7 @@ def get_students(request, page_index=1):
     search_params = get_search_students_params(request)
     # search_params1 = {'course_id': 1, 'name__contains': '王', 'is_delete': 0}
     students = Student.objects.filter(**search_params)
+
     for s in students:
         s.register_date = s.register_date.strftime("%Y-%m-%d")
 
@@ -419,17 +420,73 @@ def admin_add_course_handle(request):
 
 def admin_course_manager(request, index=1):
     limit = 3
-    courses = Course.objects.all().filter(is_delete=0)
+    courses = Course.objects.all().filter(is_delete=0).filter(id__gt=1)
     print(courses.count())
     paginator = Paginator(courses, limit)
     page = paginator.page(index)
+    classrooms = Classroom.objects.all().filter(is_delete=0)
+    teachers = Teacher.objects.all().filter(is_delete=0)
 
-    context = {'courses': courses,
+    context = {'courses': page,
+               'choice_courses': get_courses(),
                'limit': limit,
                'index': index,
-               'total': len(courses)
+               'total': len(courses),
+               'classrooms': classrooms,
+               'teachers': teachers,
+               'is_search': False
+
+
                }
 
+    return render(request, 'admin-course.html', context)
+
+
+def get_search_courses_params(request):
+    '''
+    对搜索传递的参数的key进行处理
+    :param request:
+    :return:
+    '''
+    # 班次号精确查询
+    # 班次名精确查询
+    # 上课时间模糊查询
+    # 上课教室精确查询
+
+    search_params = {}
+    for key in request.GET.keys():
+
+        value = request.GET[key]
+        if value.strip():
+            if key == 'id':
+                search_params[key] = request.GET[key]
+            else:
+                search_params[key + "__contains"] = request.GET[key]
+
+    return search_params
+
+
+def admin_get_courses(request):
+    """
+    班次信息检索
+    :param request:
+    :return:
+    """
+    search_params = get_search_courses_params(request)
+    print(search_params)
+    # 不查询暂无安排的班次
+    page = Course.objects.all().filter(**search_params).filter(id__gt=1)
+    classrooms = Classroom.objects.all().filter(is_delete=0)
+    teachers = Teacher.objects.all().filter(is_delete=0)
+    context = {'courses': page,
+               'choice_courses': get_courses(),
+               'total': len(page),
+               'classrooms': classrooms,
+               'teachers': teachers,
+               'search_params':search_params,
+               'is_search': True
+
+               }
     return render(request, 'admin-course.html', context)
 
 

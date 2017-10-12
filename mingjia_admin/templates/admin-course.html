@@ -38,44 +38,79 @@
 <div class="layui-row">
 
 
-    <form class="layui-form  x-so" METHOD="get" ACTION="/get_students/" accept-charset="UTF-8">
+    <form class="layui-form  x-so" METHOD="get" ACTION="/get_courses/" accept-charset="UTF-8">
 
         <label class="layui-label">&nbsp;&nbsp;班次号:&nbsp;&nbsp; </label>
-        <input type="text" name="course_id" placeholder="班次号查询" value="{{ search_params.school_name__contains }}"
+        <input type="text" name="id" placeholder="班次号查询" value="{{ search_params.id }}"
                autocomplete="off" class="layui-input">
         <label class="layui-label">班次名:&nbsp;&nbsp;</label>
         <div class="layui-input-inline">
-            <select name="course_name" lay-verify="required">
+            <select name="name" lay-search lay-verify="required">
 
-                {% for course in courses %}
+                <option selected value=""></option>
 
-                    {% if course.id == search_params.course_id %}
-                        <option selected value={{ course.id }}>{{ course.name }}</option>
+                {% for course in choice_courses %}
+
+                    {% if course.name == search_params.name__contains %}
+                        <option selected value={{ course.name }}>{{ course.name }}</option>
                     {% else %}
-                        <option value={{ course.id }}>{{ course.name }}</option>
+                        <option value={{ course.name }}>{{ course.name }}</option>
                     {% endif %}
 
                 {% endfor %}
+
+
             </select>
         </div>
+
+        <label class="layui-label">任课教师:&nbsp;&nbsp;</label>
+        <div class="layui-input-inline">
+            <select name="teacher__name" lay-search lay-verify="required">
+
+                <option selected value=""></option>
+
+                {% for teacher in teachers %}
+
+
+                    {% if teacher.name == search_params.teacher__name__contains %}
+                        <option selected value={{ teacher.name }}>{{ teacher.name }}</option>
+                    {% else %}
+                        <option value={{ teacher.name }}>{{ teacher.name }}</option>
+                    {% endif %}
+
+                {% endfor %}
+
+
+            </select>
+        </div>
+
         <label class="layui-label">&nbsp;&nbsp;上课时间:&nbsp;&nbsp; </label>
-        <input type="text" name="course_time" placeholder="上课时间查询" value="{{ search_params.school_name__contains }}"
+        <input type="text" name="time" placeholder="上课时间查询" value="{{ search_params.time__contains }}"
                autocomplete="off" class="layui-input">
         <label class="layui-label">&nbsp;&nbsp;上课教室: &nbsp;&nbsp;</label>
+
         <div class="layui-input-inline">
-            <select name="classroom" lay-verify="required">
+            <select name="class_field__name" lay-search lay-verify="required">
 
-                {% for course in courses %}
+                {% for class in classrooms %}
 
-                    {% if course.id == search_params.course_id %}
-                        <option selected value={{ course.id }}>{{ course.name }}</option>
+                    <option value=""></option>
+
+                    {% if class.name == search_params.class_field__name__contains %}
+                        <option selected value={{ class.name }}>{{ class.name }} {{ class.school.school_name }}</option>
                     {% else %}
-                        <option value={{ course.id }}>{{ course.name }}</option>
+                        <option value={{ class.name }}>{{ class.name }} {{ class.school.school_name }}</option>
                     {% endif %}
 
                 {% endfor %}
             </select>
+
         </div>
+
+        <label class="layui-label">&nbsp;&nbsp;备注:&nbsp;&nbsp; </label>
+        <input type="text" name="remark" placeholder="备注内容查询" value="{{ search_params.remark__contains }}"
+               autocomplete="off" class="layui-input">
+
 
         <button class="layui-btn" lay-filter="sreach"><i class="layui-icon">&#xe615;</i>
         </button>
@@ -176,7 +211,7 @@
 
                 if (!first) {
 
-                    window.location.href = '/admin_student/' + obj.curr;
+                    window.location.href = '/admin_course_manager/' + obj.curr;
 
                 }
 

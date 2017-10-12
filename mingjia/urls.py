@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^get_teachers/$', views.get_teachers),
     url(r'^admin_add_course/$', views.admin_add_course),
     url(r'^admin_course_add_handle/$', views.admin_add_course_handle),
-    url(r'^admin_course_manager/(\d*)$', views.admin_course_manager)
+    url(r'^admin_course_manager/(\d*)$', views.admin_course_manager),
+    url(r'^get_courses/$', views.admin_get_courses)
 
 ]
