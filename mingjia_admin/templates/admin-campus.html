@@ -41,72 +41,18 @@
     <form class="layui-form  x-so">
 
 
-        <label class="layui-label">&nbsp;&nbsp;班级名:&nbsp;&nbsp; </label>
-        <input type="text" name="class_name" placeholder="请填写班级名称" value=""
-               autocomplete="off" class="layui-input" lay-verify="required">
-
-        <label class="layui-label">班级所在校区:&nbsp;&nbsp;</label>
-        <div class="layui-input-inline">
-            <select name="school_id" lay-verify="required">
-                {% for school in schools %}
-                    <option value={{ school.id }}>{{ school.school_name }}</option>
-                {% endfor %}
-
-            </select>
-
-        </div>
-
-        <label class="layui-label">&nbsp;&nbsp;座位数: &nbsp;&nbsp;</label>
-        <input type="number" name="places" placeholder="请填写班级的座位数" value="40"
-               autocomplete="off" lay-verify="required" class="layui-input">
-
+        <label class="layui-label">&nbsp;&nbsp;校区名:&nbsp;&nbsp; </label>
+        <input type="text" name="school_name" placeholder="填写校区名"
+               autocomplete="off" class="layui-input">
+        <label class="layui-label">&nbsp;&nbsp;校区所在地址: &nbsp;&nbsp;</label>
+        <input type="text" name="school_address" placeholder="填写校区所在地址"
+               autocomplete="off" class="layui-input">
         <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
-        <input type="text" name="remark" placeholder="备注信息" value=""
+        <input type="text" name="remark" placeholder="备注信息"
                autocomplete="off" class="layui-input">
-
-        <button class="layui-btn" lay-filter="add" lay-submit="">添加<i class="layui-icon"></i>
-
+        <button class="layui-btn" lay-filter="add" lay-submit="">
+            添加
         </button>
-
-
-    </form>
-
-
-    <form class="layui-form  x-so" METHOD="get" ACTION="/get_classroom/" accept-charset="UTF-8">
-
-
-        <label class="layui-label">&nbsp;&nbsp;班级名:&nbsp;&nbsp; </label>
-        <input type="text" name="name" placeholder="按照班级名查询" value="{{ search_params.name__contains }}"
-               autocomplete="off" class="layui-input">
-
-        <label class="layui-label">班级所在校区:&nbsp;&nbsp;</label>
-        <div class="layui-input-inline">
-            <select name="school_id" lay-verify="required">
-                {% for school in schools %}
-
-                    {% if school.id == search_params.school_id %}
-
-                        <option selected value={{ school.id }}>{{ school.school_name }}</option>
-
-                    {% else %}
-
-                        <option value={{ school.id }}>{{ school.school_name }}</option>
-
-                    {% endif %}
-
-                {% endfor %}
-            </select>
-        </div>
-
-
-        <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
-        <input type="text
-" name="remark" placeholder="按备注信息查询" value="{{ search_params.remark__contains }}"
-               autocomplete="off" class="layui-input">
-
-        <button class="layui-btn" lay-filter="sreach">查询<i class="layui-icon"></i>
-        </button>
-
 
     </form>
 
@@ -116,7 +62,7 @@
 
 <xblock>
     <button class="layui-btn layui-btn-danger" onclick="del_all()"><i class="layui-icon"></i>批量删除</button>
-    <button class="layui-btn" onclick="x_admin_show('添加用户','./admin-add.html')"><i class="layui-icon"></i>打印显示班级信息
+    <button class="layui-btn" onclick="x_admin_show('添加用户','./admin-add.html')"><i class="layui-icon"></i>打印显示学员信息
     </button>
     <span class="x-right" style="line-height:40px">共有数据：{{ total }}条</span>
 </xblock>
@@ -129,15 +75,14 @@
             <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i
                     class="layui-icon">&#xe605;</i></div>
         </th>
-        <th>班级号</th>
-        <th>班级名</th>
-        <th>座位数</th>
-        <th>所在校区</th>
+        <th>校区号</th>
+        <th>校区名</th>
+        <th>校区地址</th>
         <th>备注</th>
         <th>操作</th>
     </thead>
     <tbody>
-    {% for classroom in classrooms %}
+    {% for school in schools %}
         <tr>
 
             <td id="check">
@@ -145,11 +90,11 @@
                         class="layui-icon">&#xe605;</i>
                 </div>
             </td>
-            <td id="id"> {{ classroom.id }}</td>
-            <td id="name">{{ classroom.name }}</td>
-            <td id="places">{{ classroom.places }}</td>
-            <td id="school">{{ classroom.school.school_name }}</td>
-            <td id="remark">{{ classroom.remark }}</td>
+            <td id="id"> {{ school.id }}</td>
+            <td id="name">{{ school.school_name }}</td>
+            <td id="gender">{{ school.school_address }}</td>
+            <td id="remark">{{ school.remark }}</td>
+
             <td class="td-manage">
                 <a title="编辑" onclick="x_admin_show('编辑','/admin_student_edit/{{ student.id }}')" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
@@ -164,9 +109,7 @@
     {% endfor %}
     </tbody>
 </table>
-
 <div class="page" id="page">
-
 </div>
 
 </div>
@@ -200,7 +143,7 @@
 
                 if (!first) {
 
-                    window.location.href = '/admin_classroom/' + obj.curr;
+                    window.location.href = '/admin_campus/' + obj.curr;
 
                 }
 
@@ -288,10 +231,8 @@
     /* 刷新当前页*/
     function refresh() {
 
-        location.replace('/admin_classroom/1')
-
+        location.replace(location.href)
     }
-
 
     layui.use(['form', 'layer'], function () {
         $ = layui.jquery;
@@ -308,7 +249,7 @@
 
             $.ajax({
                 type: 'post',
-                url: '/admin_add_classroom/',
+                url: '/admin_add_campus/',
                 contentType: 'application/json;charset=utf-8',
                 data: json_student_info,
                 success: function (data) {
@@ -319,6 +260,7 @@
 
                             layer.close(index)
                             refresh()
+
                         });
 
                     } else {
@@ -326,7 +268,6 @@
                         layer.alert("增加失败", {icon: 5}, function (index) {
 
                             layer.close(index)
-
 
                         });
 
@@ -341,6 +282,9 @@
 
 
     });
+
+
+    {#    add#}
 
 
 </script>

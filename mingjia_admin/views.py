@@ -486,6 +486,7 @@ def admin_get_courses(request):
                'is_search': True
 
                }
+
     return render(request, 'admin-course.html', context)
 
 
@@ -533,6 +534,7 @@ def admin_add_classroom(request):
     classroom.places = classroom_info['places']
     classroom.school_id = classroom_info['school_id']
     classroom.remark = classroom_info['remark']
+    classroom.is_delete = 0
     classroom.save()
 
     resp = Response()
@@ -542,14 +544,149 @@ def admin_add_classroom(request):
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
+def get_search_classroom_params(request):
+    '''
+    对搜索传递的参数的key进行处理
+    :param request:
+    :return:
+    '''
+    # 班次号精确查询
+    # 班次名精确查询
+    # 上课时间模糊查询
+    # 上课教室精确查询
+
+    search_params = {}
+    for key in request.GET.keys():
+
+        value = request.GET[key]
+        if value.strip():
+            if key == 'school_id':
+                search_params[key] = request.GET[key]
+            else:
+                search_params[key + "__contains"] = request.GET[key]
+
+        search_params['is_delete'] = 0
+
+    return search_params
+
+
 def get_classroom(request):
     """
     教室的搜索
     :param request:
     :return:
     """
+    search_params = get_search_classroom_params(request)
 
-    pass
+    classrooms = Classroom.objects.all().filter(**search_params)
+
+    schools = School.objects.all().filter(is_delete=0)
+
+    # 转型，避免前端页面接收数据进行比较时的类型不匹配
+    search_params['school_id'] = int(search_params['school_id'])
+
+    context = {'classrooms': classrooms,
+               'total': len(classrooms),
+               'schools': schools,
+               'search_params': search_params,
+               'is_search': True
+               }
+
+    return render(request, "admin-classroom.html", context)
+
+
+def admin_campus(request, index):
+    """
+    分页浏览校区信息
+    :param request:
+    :return:
+    """
+    print("index-->" + index)
+
+    limit = 20
+    schools = School.objects.all().filter(is_delete=0)
+    print(schools.count())
+    paginator = Paginator(schools, limit)
+    page = paginator.page(index)
+    context = {'schools': page,
+               'limit': limit,
+               'index': index,
+               'total': len(schools),
+               'classrooms': page,
+               }
+
+    return render(request, 'admin-campus.html', context)
+
+
+@csrf_exempt
+def admin_add_campus(request):
+    """
+    添加一个校区信息
+    :param request:
+    :return:
+    """
+    print(request.body)
+
+    school_info = json.loads(request.body, 'utf-8')
+
+    school = School()
+    school.school_name = school_info['school_name']
+    school.school_address = school_info['school_address']
+    school.remark = school_info['remark']
+    school.is_delete = 0
+    school.save()
+
+    resp = Response()
+    resp.status = 200
+    resp.result = 'success'
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
+def admin_school(request, index):
+    """
+    分页浏览本地所有学校信息
+    :param request:
+    :return:
+    """
+    print("index-->" + index)
+
+    limit = 20
+    schools = School.objects.all().filter(is_delete=2)
+    print(schools.count())
+    paginator = Paginator(schools, limit)
+    page = paginator.page(index)
+    context = {'schools': page,
+               'limit': limit,
+               'index': index,
+               'total': len(schools),
+               'classrooms': page,
+               }
+
+    return render(request, 'admin-campus.html', context)
+
+
+@csrf_exempt
+def admin_add_school(request):
+    """
+    添加一个本地学校的信息
+    :param request:
+    :return:
+    """
+    print(request.body)
+
+    school_info = json.loads(request.body, 'utf-8')
+
+    school = School()
+    school.school_name = school_info['school_name']
+    school.school_address = school_info['school_address']
+    school.remark = school_info['remark']
+    school.is_delete = 2
+    school.save()
+
+    resp = Response()
+    resp.status = 200
+    resp.result = 'success'
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
 class Response:

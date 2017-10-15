@@ -43,6 +43,10 @@ urlpatterns = [
     url(r'^get_courses/$', views.admin_get_courses),
     url(r'^admin_classroom/(\d*)$', views.admin_classroom),
     url(r'^admin_add_classroom/$', views.admin_add_classroom),
-    url(r'^get_classroom/$', views.get_classroom)
+    url(r'^get_classroom/$', views.get_classroom),
+    url(r'^admin_campus/(\d*)$', views.admin_campus),
+    url(r'^admin_add_campus/$', views.admin_add_campus),
 
+    url(r'^admin_school/(\d*)$', views.admin_school),
+    url(r'^admin_add_school/$', views.admin_add_school)
 ]
