@@ -436,7 +436,6 @@ def admin_course_manager(request, index=1):
                'teachers': teachers,
                'is_search': False
 
-
                }
 
     return render(request, 'admin-course.html', context)
@@ -483,11 +482,74 @@ def admin_get_courses(request):
                'total': len(page),
                'classrooms': classrooms,
                'teachers': teachers,
-               'search_params':search_params,
+               'search_params': search_params,
                'is_search': True
 
                }
     return render(request, 'admin-course.html', context)
+
+
+def admin_classroom(request, index):
+    """
+    分页浏览班级信息
+    :param request:
+    :return:
+    """
+    print("index-->" + index)
+
+    limit = 3
+    classrooms = Classroom.objects.all().filter(is_delete=0)
+    print(classrooms.count())
+    paginator = Paginator(classrooms, limit)
+    page = paginator.page(index)
+    schools = School.objects.all().filter(is_delete=0)
+
+    context = {'courses': page,
+               'limit': limit,
+               'index': index,
+               'total': len(classrooms),
+               'classrooms': page,
+               'schools': schools,
+               'is_search': False
+               }
+
+    return render(request, 'admin-classroom.html', context)
+
+
+@csrf_exempt
+def admin_add_classroom(request):
+    """
+    添加一个新的教室
+    :param request:
+    :return:
+    """
+    print(request.body)
+    # {"class_name": "banji", "school_id": "1", "places": "40", "remark": "de"}
+
+    classroom_info = json.loads(request.body, 'utf-8')
+
+    classroom = Classroom()
+    classroom.name = classroom_info['class_name']
+    classroom.places = classroom_info['places']
+    classroom.school_id = classroom_info['school_id']
+    classroom.remark = classroom_info['remark']
+    classroom.save()
+
+    resp = Response()
+    resp.status = 200
+    resp.result = 'success'
+
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
+def get_classroom(request):
+    """
+    教室的搜索
+    :param request:
+    :return:
+    """
+
+    pass
 
 
 class Response:
