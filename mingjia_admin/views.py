@@ -18,8 +18,6 @@ KEY = 'username'
 @user_decorator.login
 def test(request):
     cookie = request.COOKIES['username']
-    print
-    cookie
     admins = Admin.objects.all()
     admins.count()
     return HttpResponse(Course.objects.all().first().name)
@@ -92,7 +90,12 @@ def get_courses():
 @user_decorator.login
 def admin_add(request):
     courses = get_courses()
-    context = {'courses': courses}
+
+    schools = School.objects.all().filter(is_delete=2)
+
+    context = {'courses': courses,
+               'schools': schools
+               }
     return render(request, 'admin-add.html', context=context)
 
 
@@ -101,6 +104,7 @@ def admin_add_handle(request):
     # 报名学生的相关信息
     student_info = json.loads(request.body)
     student = Student()
+
     # 考虑出现重名的情况
     student.name = student_info['student_name']
     student.gender = student_info['sex']
@@ -112,15 +116,47 @@ def admin_add_handle(request):
     student.register_date = datetime.date.today()
     student.remark = student_info['remark']
     student.save()
+
     resp = Response()
     resp.status = 200
     resp.result = 'success'
+
+    # 班次id
+    course_id = student_info['course_id']
+
+    # 当选择的班级不是暂无安排的时候才进行人数的判断
+    if int(course_id) != 1:
+        course = Course.objects.get(id=course_id)
+        # 这个班次总共可容纳的人数
+        places = course.class_field.places
+        print(places)
+        # 当前人数
+        curr_num = Student.objects.all().filter(course_id=course_id).count()
+        print('当前人数-->', curr_num)
+        if curr_num >= places:
+            resp.remark = "注意！！！当前班次可容纳的总人数为: " + str(places) + "人, 当前的报名人数为: " + str(curr_num)+ "人, 请注意是否继续报名!"
+
     return HttpResponse(json.dumps(resp.__dict__, encoding='utf-8'), content_type='application/json')
 
 
-def admin_student_manager(request, page_index=1):
+def admin_student_manager(request, page_index=1, is_new=1):
+    """
+    学员管理
+    :param request:
+    :param page_index:
+    :param is_new: 1->新生 0-> 普通学员 用于标记是否是新生(班次为暂无安排的被标记为新生)
+    :return:
+    """
+    print(is_new)
     limit = 10
-    students = Student.objects.filter(is_delete=0)
+
+    if is_new == '1':
+        print('查询课程id为1')
+        students = Student.objects.filter(is_delete=0).filter(course_id=1)
+    else:
+        students = Student.objects.filter(is_delete=0)
+        print('查询所有的课程id')
+
     paginator = Paginator(students, limit)
     # 当前页面的内容
     page = paginator.page(int(page_index))
@@ -128,7 +164,7 @@ def admin_student_manager(request, page_index=1):
         p.register_date = p.register_date.strftime("%Y-%m-%d")
     # 页面展示的范围
     page_range = paginator.page_range
-    print(len(page_range))
+
     context = {'students': page,
                'courses': get_courses(),
                'limit': limit,
@@ -136,6 +172,7 @@ def admin_student_manager(request, page_index=1):
                'page_index': page_index,
                'page_range': page_range,
                'max_page': len(page_range),
+               'is_new': int(is_new),
                'is_search': False}
 
     return render(request, 'admin-student.html', context=context)
@@ -161,7 +198,7 @@ def get_search_students_params(request):
     return search_params
 
 
-def get_students(request, page_index=1):
+def get_students(request, is_new=1):
     students = None
     # 搜索
     # if not page_index.strip() and len(request.GET.keys()) > 0:
@@ -172,11 +209,14 @@ def get_students(request, page_index=1):
     for s in students:
         s.register_date = s.register_date.strftime("%Y-%m-%d")
 
-    search_params['course_id'] = long(search_params['course_id'])
+    if 'course_id' in search_params.keys():
+        search_params['course_id'] = long(search_params['course_id'])
+
     context = {'students': students,
                'courses': get_courses(),
                'search_params': search_params,
                'total': students.count(),
+               'is_new': int(is_new),
                'is_search': True}
 
     return render(request, 'admin-student.html', context)
@@ -252,6 +292,22 @@ def admin_student_edit_handle(request):
     resp.status = 200
     resp.result = 'success'
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
+def admin_student_detail(request, student_id):
+    """
+    学生详情
+    :param request:
+    :param student_id:
+    :return:
+    """
+    print(student_id)
+    student = Student.objects.all().get(id=student_id)
+    # 时间格式转化
+    student.entrance_time = student.entrance_time.strftime("%Y-%m-%d")
+    student.register_date = student.register_date.strftime("%Y-%m-%d")
+    context = {'student_info': student}
+    return render(request, 'admin-student-detail.html', context)
 
 
 def admin_teacher_add(request):
@@ -692,6 +748,7 @@ def admin_add_school(request):
 class Response:
     status = 200
     result = None
+    remark = ''
 
     def __init__(self):
         pass

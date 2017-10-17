@@ -74,14 +74,23 @@
             <label for="school_name" class="layui-form-label">
                 <span class="x-red">*</span>所在小学
             </label>
+
             <div class="layui-input-inline">
-                <input type="text" id="school_name" name="school_name" required="" lay-verify="required"
-                       autocomplete="off" class="layui-input">
+
+
+                <select name="school_name" lay-search lay-verify="required">
+
+                    <option value=""></option>
+
+                    {% for school in schools %}
+
+                        <option value={{ school.id }}> {{ school.school_name }}</option>
+
+                    {% endfor %}
+                </select>
+
             </div>
 
-            <div class="layui-form-mid layui-word-aux">
-                <span class="x-red">*</span>请填写小学就读的学校，相同小学请保持唯一名称
-            </div>
 
         </div>
 
@@ -111,7 +120,7 @@
             <div class="layui-input-inline">
                 <select name="course_id" lay-search lay-verify="required">
 
-                <option value=""></option>
+                    <option value=""></option>
 
                     {% for course in courses %}
 
@@ -172,16 +181,28 @@
 
                     if (data.result == 'success') {
 
-                        layer.alert("增加成功", {icon: 6}, function (index) {
+                        if (typeof (data.remark) == 'undefined') {
+                            layer.alert("增加成功 \n", function (index) {
 
-                            layer.close(index)
+                                layer.close(index)
 
 
-                        });
+                            });
 
-                    }else{
+                        } else {
 
-                         layer.alert("增加失败", {icon: 5}, function (index) {
+                            layer.alert("增加成功 \n" + data.remark, {icon: 6}, function (index) {
+
+                                layer.close(index)
+
+
+                            });
+                        }
+
+
+                    } else {
+
+                        layer.alert("增加失败", {icon: 5}, function (index) {
 
                             layer.close(index)
 

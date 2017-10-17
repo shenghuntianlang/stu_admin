@@ -27,12 +27,14 @@ urlpatterns = [
     url(r'^index', views.index),
     url(r'^admin_add/$', views.admin_add),
     url(r'^admin_add_handle/$', views.admin_add_handle),
-    url(r'^admin_student/(\d*)$', views.admin_student_manager),
+    url(r'^admin_student/(\d+)/(\d+)$', views.admin_student_manager),
     url(r'^admin_student_edit/(\d+)$', views.admin_student_edit),
     url(r'^admin_student_edit_handle/$', views.admin_student_edit_handle),
-    url(r'^get_students/(\d*)$', views.get_students),
+    url(r'^get_students/(\d+)$', views.get_students),
     url(r'^del_student/(\d+)$', views.del_student),
-    url(r'^del_students/', views.del_students),
+    url(r'^del_students/$', views.del_students),
+    url(r'^admin_student_detail/(\d+)$', views.admin_student_detail),
+
     url(r'^admin_teacher_add/$', views.admin_teacher_add),
     url(r'^admin_teacher_add_handle/$', views.admin_teacher_add_handle),
     url(r'^admin_teacher_manager/(\d+)$', views.admin_teacher_manager),
@@ -46,7 +48,6 @@ urlpatterns = [
     url(r'^get_classroom/$', views.get_classroom),
     url(r'^admin_campus/(\d*)$', views.admin_campus),
     url(r'^admin_add_campus/$', views.admin_add_campus),
-
     url(r'^admin_school/(\d*)$', views.admin_school),
     url(r'^admin_add_school/$', views.admin_add_school)
 ]

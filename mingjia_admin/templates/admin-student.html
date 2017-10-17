@@ -38,23 +38,28 @@
 <div class="layui-row">
 
 
-    <form class="layui-form  x-so" METHOD="get" ACTION="/get_students/" accept-charset="UTF-8">
-
-        <label class="layui-label">班次:&nbsp;&nbsp;</label>
-        <div class="layui-input-inline">
-            <select name="course_id" lay-verify="required">
-                {% for course in courses %}
-
-                    {% if course.id == search_params.course_id %}
-                        <option selected value={{ course.id }}>{{ course.name }}</option>
-                    {% else %}
-                        <option value={{ course.id }}>{{ course.name }}</option>
-                    {% endif %}
+    <form class="layui-form  x-so" METHOD="get" ACTION="/get_students/{{ is_new }}" accept-charset="UTF-8">
 
 
-                {% endfor %}
-            </select>
-        </div>
+        {% if is_new != 1 %}
+
+            <label class="layui-label">班次:&nbsp;&nbsp;</label>
+            <div class="layui-input-inline">
+                <select name="course_id" lay-verify="required">
+                    {% for course in courses %}
+
+                        {% if course.id == search_params.course_id %}
+                            <option selected value={{ course.id }}>{{ course.name }}</option>
+                        {% else %}
+                            <option value={{ course.id }}>{{ course.name }}</option>
+                        {% endif %}
+
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+
+
         <label class="layui-label">&nbsp;&nbsp;学校:&nbsp;&nbsp; </label>
         <input type="text" name="school_name" placeholder="学校" value="{{ search_params.school_name__contains }}"
                autocomplete="off" class="layui-input">
@@ -121,6 +126,11 @@
             <td id="remark">{{ student.remark }}</td>
 
             <td class="td-manage">
+
+                <a title="详情" onclick="x_admin_show('学员信息','/admin_student_detail/{{ student.id }}')" href="javascript:;">
+                    <i class="layui-icon">&#xe62a;</i>
+                </a>
+
                 <a title="编辑" onclick="x_admin_show('编辑','/admin_student_edit/{{ student.id }}')" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
@@ -168,7 +178,7 @@
 
                 if (!first) {
 
-                    window.location.href = '/admin_student/'+obj.curr;
+                    window.location.href = '/admin_student/' + obj.curr+'/{{ is_new }}';
 
                 }
 
