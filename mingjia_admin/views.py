@@ -9,6 +9,7 @@ from mingjia_admin.models import *
 from django.views.decorators.csrf import csrf_exempt
 import json
 import datetime
+import time
 from user import user_decorator
 
 KEY = 'username'
@@ -134,7 +135,7 @@ def admin_add_handle(request):
         curr_num = Student.objects.all().filter(course_id=course_id).count()
         print('当前人数-->', curr_num)
         if curr_num >= places:
-            resp.remark = "注意！！！当前班次可容纳的总人数为: " + str(places) + "人, 当前的报名人数为: " + str(curr_num)+ "人, 请注意是否继续报名!"
+            resp.remark = "注意！！！当前班次可容纳的总人数为: " + str(places) + "人, 当前的报名人数为: " + str(curr_num) + "人, 请注意是否继续报名!"
 
     return HttpResponse(json.dumps(resp.__dict__, encoding='utf-8'), content_type='application/json')
 
@@ -288,6 +289,7 @@ def admin_student_edit_handle(request):
     student.register_date = datetime.date.today()
     student.remark = student_info['remark']
     student.save()
+
     resp = Response()
     resp.status = 200
     resp.result = 'success'
@@ -355,9 +357,29 @@ def admin_teacher_add_handle(request):
     return HttpResponse(resp_json, content_type='application/json')
 
 
+def admin_teacher_leave(request, teacher_id):
+
+    teacher = Teacher.objects.get(id=teacher_id)
+    print (teacher.name)
+
+    resp = Response()
+    resp.status = 200
+    if teacher.leave_date == None:
+        # 设置为离职状态，添加离职时间
+        teacher.leave_date = datetime.date.today()
+        teacher.save()
+        resp.result = "success"
+        resp.remark = "设置成功"
+    else:
+        resp.result = "failed"
+        resp.remark = "已设置为离职状态，无需继续设置"
+
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
 def admin_teacher_manager(request, page_index=1):
     # 每页显示的条数
-    limit = 3
+    limit = 20
     # 获取所有的教师信息
     teachers = Teacher.objects.all()
 
@@ -385,6 +407,42 @@ def admin_teacher_manager(request, page_index=1):
                }
 
     return render(request, 'admin-teacher.html', context)
+
+
+def admin_teacher_edit(request, teacher_id):
+    teacher_info = Teacher.objects.get(id=teacher_id)
+
+    teacher_info.entry_date = teacher_info.entry_date.strftime('%Y-%m-%d')
+
+    context = {'teacher_info': teacher_info,
+               'edu': get_edu(),
+               'english_level': get_english_level()
+               }
+
+    return render(request, "admin-teacher-edit.html", context)
+
+
+@csrf_exempt
+def admin_teacher_edit_handle(request):
+    teacher_info = json.loads(request.body, 'utf-8')
+    teacher = Teacher.objects.get(id=teacher_info['teacher_id'])
+    print(teacher.name)
+    teacher.name = teacher_info['teacher_name']
+    teacher.gender = teacher_info['gender']
+    teacher.entry_date = teacher_info['entrance_time']
+    teacher.id_number = teacher_info['identity']
+    teacher.phone = teacher_info['phone']
+    teacher.edu = teacher_info['edu']
+    teacher.english_level = teacher_info['english_level']
+    teacher.remark = teacher_info['remark']
+
+    teacher.save()
+
+    resp = Response()
+    resp.status = 200
+    resp.result = "success"
+
+    return HttpResponse(json.dumps(resp.__dict__), content_type="application/json")
 
 
 def get_search_teachers_params(request):
