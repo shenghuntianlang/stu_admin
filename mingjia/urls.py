@@ -19,6 +19,7 @@ from mingjia_admin import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^admin_print/(\d+)/(\d+)/(\d+)$', views.admin_print),
     url(r'^test/$', views.test),
     url(r'^index/$', views.index),
     url(r'^user/$', views.login),
@@ -34,13 +35,12 @@ urlpatterns = [
     url(r'^del_student/(\d+)$', views.del_student),
     url(r'^del_students/$', views.del_students),
     url(r'^admin_student_detail/(\d+)$', views.admin_student_detail),
-
     url(r'^admin_teacher_add/$', views.admin_teacher_add),
     url(r'^admin_teacher_add_handle/$', views.admin_teacher_add_handle),
     url(r'^admin_teacher_manager/(\d+)$', views.admin_teacher_manager),
     url(r'^admin_teacher_edit/(\d+)$', views.admin_teacher_edit),
     url(r'^admin_teacher_edit_handle/$', views.admin_teacher_edit_handle),
-    url(r'^admin_teacher_leave/(\d+)$',views.admin_teacher_leave),
+    url(r'^admin_teacher_leave/(\d+)$', views.admin_teacher_leave),
     url(r'^get_teachers/$', views.get_teachers),
     url(r'^admin_add_course/$', views.admin_add_course),
     url(r'^admin_course_add_handle/$', views.admin_add_course_handle),
@@ -52,5 +52,7 @@ urlpatterns = [
     url(r'^admin_campus/(\d*)$', views.admin_campus),
     url(r'^admin_add_campus/$', views.admin_add_campus),
     url(r'^admin_school/(\d*)$', views.admin_school),
-    url(r'^admin_add_school/$', views.admin_add_school)
+    url(r'^admin_add_school/$', views.admin_add_school),
+    url(r'^admin_download/([\s\S]*)$',views.admin_download)
+
 ]

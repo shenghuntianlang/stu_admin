@@ -70,6 +70,10 @@
         <input type="text" name="name" placeholder="姓名" value="{{ search_params.name__contains }}"
                autocomplete="off" class="layui-input">
 
+        <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
+        <input type="text" name="remark" placeholder="备注" value="{{ search_params.remark__contains }}"
+               autocomplete="off" class="layui-input">
+
         <button class="layui-btn" lay-filter="sreach"><i class="layui-icon">&#xe615;</i>
         </button>
     </form>
@@ -127,8 +131,14 @@
 
             <td class="td-manage">
 
-                <a title="详情" onclick="x_admin_show('学员信息','/admin_student_detail/{{ student.id }}')" href="javascript:;">
+                <a title="详情" onclick="x_admin_show('学员信息','/admin_student_detail/{{ student.id }}')"
+                   href="javascript:;">
                     <i class="layui-icon">&#xe62a;</i>
+                </a>
+
+                <a title="打印" onclick="x_admin_show('下载报表','/admin_print/0/1/{{ student.id }}')"
+                   href="javascript:;">
+                    <i class="layui-icon">&#xe629;</i>
                 </a>
 
                 <a title="编辑" onclick="x_admin_show('编辑','/admin_student_edit/{{ student.id }}')" href="javascript:;">
@@ -178,7 +188,7 @@
 
                 if (!first) {
 
-                    window.location.href = '/admin_student/' + obj.curr+'/{{ is_new }}';
+                    window.location.href = '/admin_student/' + obj.curr + '/{{ is_new }}';
 
                 }
 

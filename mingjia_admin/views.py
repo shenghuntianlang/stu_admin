@@ -2,8 +2,9 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import xlwt
 from django.core.paginator import Paginator
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.shortcuts import render, render_to_response
 from mingjia_admin.models import *
 from django.views.decorators.csrf import csrf_exempt
@@ -116,6 +117,7 @@ def admin_add_handle(request):
     student.course_id = student_info['course_id']
     student.register_date = datetime.date.today()
     student.remark = student_info['remark']
+    student.is_delete = 0
     student.save()
 
     resp = Response()
@@ -149,7 +151,7 @@ def admin_student_manager(request, page_index=1, is_new=1):
     :return:
     """
     print(is_new)
-    limit = 10
+    limit = 20
 
     if is_new == '1':
         print('查询课程id为1')
@@ -358,9 +360,8 @@ def admin_teacher_add_handle(request):
 
 
 def admin_teacher_leave(request, teacher_id):
-
     teacher = Teacher.objects.get(id=teacher_id)
-    print (teacher.name)
+    print(teacher.name)
 
     resp = Response()
     resp.status = 200
@@ -803,6 +804,29 @@ def admin_add_school(request):
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
+def admin_download(request, file_name):
+    """
+    文件下载的方法
+    :param request:
+    :return:
+    """
+
+    def file_iterator(file_name, chunk_size=512):
+        with open(file_name, 'rb') as f:
+            while True:
+                c = f.read(chunk_size)
+                if c:
+                    yield c
+                else:
+                    break
+
+    the_file_name = "mingjia_admin/file/" + file_name
+    response = StreamingHttpResponse(file_iterator(the_file_name))
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'attachment;filename="{0}"'.format(the_file_name)
+    return response
+
+
 class Response:
     status = 200
     result = None
@@ -833,3 +857,165 @@ def get_edu():
 
 def get_english_level():
     return ['英语四级', '英语六级', '专业四级', '专业八级']
+
+
+def get_current_time():
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+
+
+def admin_print(request, type, is_single, id):
+    """
+    生成报表
+    :param request:
+    :param type:
+    :param is_single:
+    :param id:
+    :return:
+    """
+
+    # type: # 打印的类型
+    # is_single: 0->打印单个 1->打印多个
+    # id: 要打印的学生/当前页面中显示的内容
+
+    print(type)
+    print(is_single)
+    print(id)
+
+    table_name = None
+
+    if int(type) == 0:
+        if int(is_single) == 1:
+            # 创建学员报表
+            table_name = create_student_table(id)
+
+    context = {'table_name': table_name}
+    return render(request, 'admin-print.html', context)
+
+
+def create_student_table(id):
+    student = Student.objects.get(id=id)
+    """
+    创建学生信息的表格
+    :param context:
+    :return:
+    """
+
+    # 创建工作簿
+    wbk = xlwt.Workbook('utf-8')
+    # 创建工作表
+    sheet1 = wbk.add_sheet('Sheet1', cell_overwrite_ok=True)
+
+    font = xlwt.Font()
+
+    # 设置单元格中标题文字的显示样式
+    style_title = xlwt.easyxf('font:height 420;')  # 36pt,类型小初的字号
+    alignment_title = xlwt.Alignment()  # Create Alignment
+    alignment_title.horz = xlwt.Alignment.HORZ_CENTER  # May be: HORZ_GENERAL, HORZ_LEFT, HORZ_CENTER, HORZ_RIGHT, HORZ_FILLED, HORZ_JUSTIFIED, HORZ_CENTER_ACROSS_SEL, HORZ_DISTRIBUTED
+    style_title.alignment = alignment_title
+    # 设置第二列和第四列的宽度
+
+    # 设置单元格的宽度
+    for i in xrange(0, 6):
+        print
+        i
+        if i % 2 == 0:
+            sheet1.col(i).width = 256 * 15
+        else:
+            sheet1.col(i).width = 256 * 20
+
+    # 标题
+    sheet1.write_merge(0, 0, 0, 4, '名佳英语学员信息表', style_title)
+    # 设置正文文本再单元格中的显示样式
+    style_content = xlwt.easyxf('font:height 280;')
+    alignment_content = xlwt.Alignment()
+    alignment_content.horz = xlwt.Alignment.WRAP_AT_RIGHT
+    style_content.alignment = alignment_content
+    borders = xlwt.Borders()
+    borders.top = xlwt.Borders.DOUBLE
+    borders.top_colour = 0x40
+    style_border = xlwt.XFStyle()
+    style_border.borders = borders
+    startLine = 3
+    for i in xrange(0, 5):
+        sheet1.write(startLine + 1, i, "", style_border)
+
+    sheet1.write(startLine + 2, 0, '打印时间:', style_content)
+
+    sheet1.write(startLine + 2, 1, get_current_time(), style_content)
+
+    sheet1.write(startLine + 4, 0, '学号:', style_content)
+
+    sheet1.write(startLine + 4, 1, student.id, style_content)
+
+    sheet1.write(startLine + 4, 2, '姓名:', style_content)
+
+    sheet1.write(startLine + 4, 3, student.name, style_content)
+
+    sheet1.write(startLine + 6, 0, '性别:', style_content)
+
+    sheet1.write(startLine + 6, 1, student.gender, style_content)
+
+    sheet1.write(startLine + 6, 2, '学校:', style_content)
+
+    sheet1.write(startLine + 6, 3, student.school_name, style_content)
+
+    sheet1.write(startLine + 8, 0, '入校时间:', style_content)
+
+    sheet1.write(startLine + 8, 1, student.entrance_time, style_content)
+
+    sheet1.write(startLine + 8, 2, '年级:', style_content)
+    sheet1.write(startLine + 8, 3, '3', style_content)
+
+    sheet1.write(startLine + 10, 0, '班级:', style_content)
+
+    sheet1.write(startLine + 10, 1, student.grade, style_content)
+
+    sheet1.write(startLine + 10, 2, '联系电话:', style_content)
+
+    sheet1.write(startLine + 10, 3, student.phone, style_content)
+
+    sheet1.write(startLine + 12, 0, '备注:', style_content)
+
+    sheet1.write(startLine + 12, 1, student.remark, style_content)
+
+
+    print (student.course.name)
+
+
+
+
+    for i in xrange(0, 5):
+        sheet1.write(startLine + 14, i, "", style_border)
+
+    if student.course.name == '暂无安排':
+        sheet1.write(startLine + 17, 0, '所在班次:', style_content)
+        sheet1.write(startLine + 17, 1, '暂无安排', style_content)
+    else:
+        sheet1.write(startLine + 17, 0, '所在班次:', style_content)
+        sheet1.write(startLine + 17, 1, student.course.name, style_content)
+
+        sheet1.write(startLine + 19, 0, '任课教师:', style_content)
+        sheet1.write(startLine + 19, 1, student.course.teacher.name, style_content)
+
+        sheet1.write(startLine + 21, 0, '教师电话:', style_content)
+
+        sheet1.write(startLine + 21, 1, student.course.teacher.phone, style_content)
+
+        sheet1.write(startLine + 23, 0, '上课地点:', style_content)
+        sheet1.write(startLine + 23, 1,
+                     student.course.class_field.name + "--" + student.course.class_field.school.school_name, style_content)
+
+        sheet1.write(startLine + 25, 0, '班次时间:', style_content)
+        sheet1.write(startLine + 25, 1, student.course.time, style_content)
+
+        sheet1.write(startLine + 27, 0, '报名时间:', style_content)
+        sheet1.write(startLine + 27, 1, student.register_date, style_content)
+
+        sheet1.write(startLine + 29, 0, '班次备注:', style_content)
+        sheet1.write(startLine + 29, 1, student.course.remark, style_content)
+
+    table_name = str(time.time()) + student.name + ".xls"
+
+    wbk.save('mingjia_admin/file/' + table_name)
+
+    return table_name
