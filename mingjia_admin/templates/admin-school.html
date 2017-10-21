@@ -38,44 +38,22 @@
 <div class="layui-row">
 
 
-    <form class="layui-form  x-so" METHOD="get" ACTION="/get_students/{{ is_new }}" accept-charset="UTF-8">
+    <form class="layui-form  x-so">
 
 
-        {% if is_new != 1 %}
-
-            <label class="layui-label">班次:&nbsp;&nbsp;</label>
-            <div class="layui-input-inline">
-                <select name="course_id" lay-verify="required">
-                    {% for course in courses %}
-
-                        {% if course.id == search_params.course_id %}
-                            <option selected value={{ course.id }}>{{ course.name }}</option>
-                        {% else %}
-                            <option value={{ course.id }}>{{ course.name }}</option>
-                        {% endif %}
-
-                    {% endfor %}
-                </select>
-            </div>
-        {% endif %}
-
-
-        <label class="layui-label">&nbsp;&nbsp;学校:&nbsp;&nbsp; </label>
-        <input type="text" name="school_name" placeholder="学校" value="{{ search_params.school_name__contains }}"
+        <label class="layui-label">&nbsp;&nbsp;校区名:&nbsp;&nbsp; </label>
+        <input type="text" name="school_name" placeholder="填写校区名"
                autocomplete="off" class="layui-input">
-        <label class="layui-label">&nbsp;&nbsp;手机号码: &nbsp;&nbsp;</label>
-        <input type="number" name="phone" placeholder="手机号码" value="{{ search_params.phone__contains }}"
+        <label class="layui-label">&nbsp;&nbsp;校区所在地址: &nbsp;&nbsp;</label>
+        <input type="text" name="school_address" placeholder="填写校区所在地址"
                autocomplete="off" class="layui-input">
-        <label class="layui-label">&nbsp;&nbsp;姓名: &nbsp;&nbsp;</label>
-        <input type="text" name="name" placeholder="姓名" value="{{ search_params.name__contains }}"
-               autocomplete="off" class="layui-input">
-
         <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
-        <input type="text" name="remark" placeholder="备注" value="{{ search_params.remark__contains }}"
+        <input type="text" name="remark" placeholder="备注信息"
                autocomplete="off" class="layui-input">
-
-        <button class="layui-btn" lay-filter="sreach"><i class="layui-icon">&#xe615;</i>
+        <button class="layui-btn" lay-filter="add" lay-submit="">
+            添加
         </button>
+
     </form>
 
 
@@ -83,17 +61,10 @@
 </div>
 
 <xblock>
-
     <button class="layui-btn layui-btn-danger" onclick="del_all()"><i class="layui-icon"></i>批量删除</button>
-
-    <button class="layui-btn"
-            onclick="x_admin_show('添加用户','/admin_print_more/?type=0&is_search={{ is_search }}&is_new={{ is_new }}&index={{ page_index }}&course_id={{ search_params.course_id }}&school_name={{ search_params.school_name__contains }}&phone={{ search_params.phone__contains }}&name={{ search_params.name__contains }}&remark={{ search_params.remark__contains }}')">
-
-        <i class="layui-icon"></i>打印显示学员信息
-
+    <button class="layui-btn" onclick="x_admin_show('添加用户','./admin-add.html')"><i class="layui-icon"></i>打印显示学员信息
     </button>
     <span class="x-right" style="line-height:40px">共有数据：{{ total }}条</span>
-
 </xblock>
 
 
@@ -104,20 +75,14 @@
             <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i
                     class="layui-icon">&#xe605;</i></div>
         </th>
-        <th>学号</th>
-        <th>姓名</th>
-        <th>性别</th>
-        <th>所在班次</th>
-        <th>电话</th>
-        <th>所在小学</th>
-        <th>年级</th>
-        <th>班级</th>
-        <th>报名时间</th>
+        <th>校区号</th>
+        <th>校区名</th>
+        <th>校区地址</th>
         <th>备注</th>
         <th>操作</th>
     </thead>
     <tbody>
-    {% for student in students %}
+    {% for school in schools %}
         <tr>
 
             <td id="check">
@@ -125,29 +90,12 @@
                         class="layui-icon">&#xe605;</i>
                 </div>
             </td>
-            <td id="id"> {{ student.id }}</td>
-            <td id="name">{{ student.name }}</td>
-            <td id="gender">{{ student.gender }}</td>
-            <td id="course_name">{{ student.course.name }}</td>
-            <td id="phone">{{ student.phone }}</td>
-            <td id="school_name">{{ student.school_name }}</td>
-            <td id="grade">{{ 3 }}</td>
-            <td id="class_name">{{ student.class_name }}</td>
-            <td id="register">{{ student.register_date }}</td>
-            <td id="remark">{{ student.remark }}</td>
+            <td id="id"> {{ school.id }}</td>
+            <td id="name">{{ school.school_name }}</td>
+            <td id="gender">{{ school.school_address }}</td>
+            <td id="remark">{{ school.remark }}</td>
 
             <td class="td-manage">
-
-                <a title="详情" onclick="x_admin_show('学员信息','/admin_student_detail/{{ student.id }}')"
-                   href="javascript:;">
-                    <i class="layui-icon">&#xe62a;</i>
-                </a>
-
-                <a title="打印" onclick="x_admin_show('下载报表','/admin_print/0/{{ student.id }}')"
-                   href="javascript:;">
-                    <i class="layui-icon">&#xe629;</i>
-                </a>
-
                 <a title="编辑" onclick="x_admin_show('编辑','/admin_student_edit/{{ student.id }}')" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
@@ -190,12 +138,12 @@
             elem: 'page'
             , count: {{ total }}
             , limit: {{ limit }}
-            , curr: {{ page_index }}
+            , curr: {{ index }}
             , jump: function (obj, first) {
 
                 if (!first) {
 
-                    window.location.href = '/admin_student/' + obj.curr + '/{{ is_new }}';
+                    window.location.href = '/admin_school/' + obj.curr;
 
                 }
 
@@ -285,6 +233,58 @@
 
         location.replace(location.href)
     }
+
+    layui.use(['form', 'layer'], function () {
+        $ = layui.jquery;
+        var form = layui.form
+            , layer = layui.layer;
+
+        //监听提交
+        form.on('submit(add)', function (data) {
+            console.log('打印开始')
+            console.log(data);
+            console.log('打印结束')
+            //发异步，把数据提交给php
+            var json_student_info = JSON.stringify(data.field);
+
+            $.ajax({
+                type: 'post',
+                url: '/admin_add_school/',
+                contentType: 'application/json;charset=utf-8',
+                data: json_student_info,
+                success: function (data) {
+
+                    if (data.result == 'success') {
+
+                        layer.alert("增加成功", {icon: 6}, function (index) {
+
+                            layer.close(index)
+                            refresh()
+
+                        });
+
+                    } else {
+
+                        layer.alert("增加失败", {icon: 5}, function (index) {
+
+                            layer.close(index)
+
+                        });
+
+                    }
+
+                }
+
+            })
+
+            return false;
+        });
+
+
+    });
+
+
+    {#    add#}
 
 
 </script>

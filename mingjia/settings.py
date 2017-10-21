@@ -25,7 +25,7 @@ SECRET_KEY = '-$jo914-j8fgg^ill&!pk-xm)-xmc2f2sgc_a1_gu%0=9f-94s'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['172.28.67.7']
+ALLOWED_HOSTS = ['172.22.15.65']
 
 # Application definition
 
@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'xlwt',
     'mingjia_admin'
 ]
 

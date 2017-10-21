@@ -72,29 +72,36 @@
     </form>
 
 
-    <form class="layui-form  x-so" METHOD="get" ACTION="/get_students/" accept-charset="UTF-8">
+    <form class="layui-form  x-so" METHOD="get" ACTION="/get_classroom/" accept-charset="UTF-8">
 
 
         <label class="layui-label">&nbsp;&nbsp;班级名:&nbsp;&nbsp; </label>
-        <input type="text" name="school_name" placeholder="按照班级名查询" value="{{ search_params.school_name__contains }}"
+        <input type="text" name="name" placeholder="按照班级名查询" value="{{ search_params.name__contains }}"
                autocomplete="off" class="layui-input">
 
         <label class="layui-label">班级所在校区:&nbsp;&nbsp;</label>
         <div class="layui-input-inline">
-            <select name="course_id" lay-verify="required">
+            <select name="school_id" lay-verify="required">
                 {% for school in schools %}
+
                     {% if school.id == search_params.school_id %}
+
                         <option selected value={{ school.id }}>{{ school.school_name }}</option>
+
                     {% else %}
+
                         <option value={{ school.id }}>{{ school.school_name }}</option>
+
                     {% endif %}
+
                 {% endfor %}
             </select>
         </div>
 
 
         <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
-        <input type="number" name="phone" placeholder="按备注信息查询" value="{{ search_params.phone__contains }}"
+        <input type="text
+" name="remark" placeholder="按备注信息查询" value="{{ search_params.remark__contains }}"
                autocomplete="off" class="layui-input">
 
         <button class="layui-btn" lay-filter="sreach">查询<i class="layui-icon"></i>
