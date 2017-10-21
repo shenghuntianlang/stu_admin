@@ -83,10 +83,17 @@
 </div>
 
 <xblock>
+
     <button class="layui-btn layui-btn-danger" onclick="del_all()"><i class="layui-icon"></i>批量删除</button>
-    <button class="layui-btn" onclick="x_admin_show('添加用户','./admin-add.html')"><i class="layui-icon"></i>打印显示学员信息
+
+    <button class="layui-btn"
+            onclick="x_admin_show('添加用户','/admin_print_more/?type=0&is_search={{ is_search }}&is_new={{ is_new }}&index={{ page_index }}&course_id={{ search_params.course_id }}&school_name={{ search_params.school_name__contains }}&phone={{ search_params.phone__contains }}&name={{ search_params.name__contains }}&remark={{ search_params.remark__contains }}')">
+
+        <i class="layui-icon"></i>打印显示学员信息
+
     </button>
     <span class="x-right" style="line-height:40px">共有数据：{{ total }}条</span>
+
 </xblock>
 
 
@@ -136,7 +143,7 @@
                     <i class="layui-icon">&#xe62a;</i>
                 </a>
 
-                <a title="打印" onclick="x_admin_show('下载报表','/admin_print/0/1/{{ student.id }}')"
+                <a title="打印" onclick="x_admin_show('下载报表','/admin_print/0/{{ student.id }}')"
                    href="javascript:;">
                     <i class="layui-icon">&#xe629;</i>
                 </a>

@@ -2,6 +2,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import xlwt
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
@@ -142,17 +143,8 @@ def admin_add_handle(request):
     return HttpResponse(json.dumps(resp.__dict__, encoding='utf-8'), content_type='application/json')
 
 
-def admin_student_manager(request, page_index=1, is_new=1):
-    """
-    学员管理
-    :param request:
-    :param page_index:
-    :param is_new: 1->新生 0-> 普通学员 用于标记是否是新生(班次为暂无安排的被标记为新生)
-    :return:
-    """
-    print(is_new)
-    limit = 20
-
+def get_student(page_index, is_new):
+    limit = 60
     if is_new == '1':
         print('查询课程id为1')
         students = Student.objects.filter(is_delete=0).filter(course_id=1)
@@ -165,13 +157,30 @@ def admin_student_manager(request, page_index=1, is_new=1):
     page = paginator.page(int(page_index))
     for p in page:
         p.register_date = p.register_date.strftime("%Y-%m-%d")
-    # 页面展示的范围
-    page_range = paginator.page_range
 
-    context = {'students': page,
+    return (paginator, page, limit, students)
+
+
+def admin_student_manager(request, page_index=1, is_new=1):
+    """
+    学员管理
+    :param request:
+    :param page_index:
+    :param is_new: 1->新生 0-> 普通学员 用于标记是否是新生(班次为暂无安排的被标记为新生)
+    :return:
+    """
+
+    print(is_new)
+
+    stu = get_student(page_index, is_new)
+
+    # 页面展示的范围
+    page_range = stu[0].page_range
+
+    context = {'students': stu[1],
                'courses': get_courses(),
-               'limit': limit,
-               'total': students.count(),
+               'limit': stu[2],
+               'total': stu[3].count(),
                'page_index': page_index,
                'page_range': page_range,
                'max_page': len(page_range),
@@ -187,11 +196,17 @@ def get_search_students_params(request):
     :param request:
     :return: search_params 封装查询参数的字典
     """
+
+    # type = 0 & is_search = False & is_new = 1 & index = 1 & course_id = & school_name = & phone = & name = & remark =
+
     search_params = {}
 
     for key in request.GET.keys():
         value = request.GET[key]
         if value.strip():
+            # 用于过滤打印时上传的参数
+            if key == 'type' or key == 'is_search' or key == 'is_new' or key == 'index':
+                continue
             if key != 'course_id':
                 search_params[key + "__contains"] = value
             else:
@@ -208,7 +223,6 @@ def get_students(request, is_new=1):
     search_params = get_search_students_params(request)
     # search_params1 = {'course_id': 1, 'name__contains': '王', 'is_delete': 0}
     students = Student.objects.filter(**search_params)
-
     for s in students:
         s.register_date = s.register_date.strftime("%Y-%m-%d")
 
@@ -806,12 +820,13 @@ def admin_add_school(request):
 
 def admin_download(request, file_name):
     """
-    文件下载的方法
+    文件下载
     :param request:
     :return:
     """
 
     def file_iterator(file_name, chunk_size=512):
+        # 需要加上‘rb’,负责下载的文件将是乱码
         with open(file_name, 'rb') as f:
             while True:
                 c = f.read(chunk_size)
@@ -863,7 +878,7 @@ def get_current_time():
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
 
 
-def admin_print(request, type, is_single, id):
+def admin_print(request, type, id):
     """
     生成报表
     :param request:
@@ -872,24 +887,106 @@ def admin_print(request, type, is_single, id):
     :param id:
     :return:
     """
+    # 生成报表前先清空之前已经存在的报表文件
+    del_files('mingjia_admin/file')
 
     # type: # 打印的类型
     # is_single: 0->打印单个 1->打印多个
     # id: 要打印的学生/当前页面中显示的内容
-
     print(type)
-    print(is_single)
     print(id)
 
     table_name = None
 
     if int(type) == 0:
-        if int(is_single) == 1:
-            # 创建学员报表
-            table_name = create_student_table(id)
+        # 创建学员报表
+        table_name = create_student_table(id)
 
     context = {'table_name': table_name}
     return render(request, 'admin-print.html', context)
+
+
+def admin_print_more(request):
+    # {u'index': [u''], u'remark': [u''], u'name': [u''], u'is_search': [u'True'], u'school_name': [u''],
+    #  u'phone': [u'1'], u'course_id': [u'2'], u'type': [u'0']}
+
+    # 生成报表前先清空之前已经存在的报表文件
+    del_files('mingjia_admin/file')
+    print(request.GET)
+    context = {}
+
+    # type -> 0 -> 学员
+    if int(request.GET['type']) == 0:
+        if request.GET['is_search'] == 'False':
+            page_index = request.GET['index']
+            is_new = request.GET['is_new']
+
+            # 根据当前显示的页来查询学生信息
+            students = get_student(page_index, is_new)[1]
+            for s in students:
+                print(str(s.id) + "-->" + s.name)
+            table_name = create_students_table(students)
+            context = {'table_name': table_name}
+
+
+
+
+        # 根据搜索的结果生成报表
+        else:
+            search_params = get_search_students_params(request)
+            students = Student.objects.filter(**search_params)
+            for s in students:
+                print(s.name)
+                s.register_date = s.register_date.strftime("%Y-%m-%d")
+            print(search_params)
+            print('根据搜索的结果生成报表')
+            table_name = create_students_table(students)
+            context = {'table_name': table_name}
+
+    return render(request, 'admin-print.html', context)
+
+
+def create_students_table(students):
+    wbk = xlwt.Workbook('utf-8')
+    sheet1 = wbk.add_sheet('Sheet1', cell_overwrite_ok=True)
+
+    header = ['学号', '姓名', '性别', '班次', '电话', '就读小学', '年级']
+
+    # 设置表格单元格的宽度
+    sheet1.col(0).width = 256 * 8
+    sheet1.col(1).width = 256 * 14
+    sheet1.col(2).width = 256 * 8
+    sheet1.col(3).width = 256 * 30
+    sheet1.col(4).width = 256 * 15
+    sheet1.col(5).width = 256 * 15
+    sheet1.col(6).width = 256 * 8
+
+    style_title = xlwt.easyxf('font:height 220;')  # 36pt,类型小初的字号
+    alignment_title = xlwt.Alignment()  # Create Alignment
+    alignment_title.horz = xlwt.Alignment.HORZ_CENTER  # May be: HORZ_GENERAL, HORZ_LEFT, HORZ_CENTER, HORZ_RIGHT, HORZ_FILLED, HORZ_JUSTIFIED, HORZ_CENTER_ACROSS_SEL, HORZ_DISTRIBUTED
+    style_title.alignment = alignment_title
+
+    # 设置表头文字
+    for i in xrange(header.__len__()):
+        sheet1.write(0, i, header[i], style_title)
+
+    line = 2
+    for s in students:
+        sheet1.write(line, 0, s.id, style_title)
+        sheet1.write(line, 1, s.name, style_title)
+        sheet1.write(line, 2, s.gender, style_title)
+        sheet1.write(line, 3, s.course.name, style_title)
+        sheet1.write(line, 4, s.phone, style_title)
+        sheet1.write(line, 5, s.school_name, style_title)
+        # 当前学生所在的年级需要单独计算
+        sheet1.write(line, 6, '3', style_title)
+        line += 1
+
+    table_name = str(time.time()) + ".xls"
+
+    wbk.save('mingjia_admin/file/' + table_name)
+
+    return table_name
 
 
 def create_student_table(id):
@@ -978,11 +1075,7 @@ def create_student_table(id):
 
     sheet1.write(startLine + 12, 1, student.remark, style_content)
 
-
-    print (student.course.name)
-
-
-
+    print(student.course.name)
 
     for i in xrange(0, 5):
         sheet1.write(startLine + 14, i, "", style_border)
@@ -1003,7 +1096,8 @@ def create_student_table(id):
 
         sheet1.write(startLine + 23, 0, '上课地点:', style_content)
         sheet1.write(startLine + 23, 1,
-                     student.course.class_field.name + "--" + student.course.class_field.school.school_name, style_content)
+                     student.course.class_field.name + "--" + student.course.class_field.school.school_name,
+                     style_content)
 
         sheet1.write(startLine + 25, 0, '班次时间:', style_content)
         sheet1.write(startLine + 25, 1, student.course.time, style_content)
@@ -1019,3 +1113,15 @@ def create_student_table(id):
     wbk.save('mingjia_admin/file/' + table_name)
 
     return table_name
+
+
+def del_files(parent):
+    """
+    删除指定目录下的所有文件
+    :param parent: 父目录
+    :return:
+    """
+    path_dirs = os.listdir(parent)
+    if path_dirs.__len__() > 0:
+        for f in path_dirs:
+            os.remove(parent + "/" + f)

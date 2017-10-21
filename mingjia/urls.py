@@ -19,7 +19,8 @@ from mingjia_admin import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^admin_print/(\d+)/(\d+)/(\d+)$', views.admin_print),
+    url(r'^admin_print/(\d+)/(\d+)$', views.admin_print),
+    url(r'^admin_print_more/$', views.admin_print_more),
     url(r'^test/$', views.test),
     url(r'^index/$', views.index),
     url(r'^user/$', views.login),
@@ -53,6 +54,6 @@ urlpatterns = [
     url(r'^admin_add_campus/$', views.admin_add_campus),
     url(r'^admin_school/(\d*)$', views.admin_school),
     url(r'^admin_add_school/$', views.admin_add_school),
-    url(r'^admin_download/([\s\S]*)$',views.admin_download)
+    url(r'^admin_download/([\s\S]*)$', views.admin_download)
 
 ]
