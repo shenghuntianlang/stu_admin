@@ -91,6 +91,30 @@
         </div>
 
 
+        <label class="layui-label">状态:&nbsp;&nbsp;</label>
+        <div class="layui-input-inline">
+            <select name="is_delete" lay-verify="required">
+
+                <option selected value=''></option>
+
+
+                <option value=0 {% if search_params.is_delete == 0 %}
+                        selected
+                {% endif %}>在职
+                </option>
+                <option value=1{% if search_params.is_delete == 1 %}
+                        selected
+                {% endif %}>离职
+                </option>
+
+            </select>
+        </div>
+
+
+       <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
+        <input type="text" name="remark" placeholder="备注" value="{{ search_params.remark__contains }}"
+               autocomplete="off" class="layui-input">
+
         <button class="layui-btn" lay-filter="sreach"><i class="layui-icon">&#xe615;</i>
         </button>
     </form>
@@ -100,8 +124,11 @@
 </div>
 
 <xblock>
-    <button class="layui-btn" onclick="x_admin_show('添加用户','./admin-add.html')"><i class="layui-icon"></i>打印显示学员信息
+    <button class="layui-btn" onclick="x_admin_show('批量打印','/admin_print_more/?type=1&is_search={{ is_search }}&index={{ page_index }}&id={{ search_params.id}}&name={{ search_params.name__contains }}&edu={{ search_params.edu__contains }}&english_level={{ search_params.english_level__contains }}&is_delete={{ search_params.is_delete }}&remark={{ search_params.remark__contains }}')"><i class="layui-icon"></i>打印显示教师信息
+
     </button>
+
+
     <span class="x-right" style="line-height:40px">共有数据：{{ total }}条</span>
 </xblock>
 
@@ -145,11 +172,16 @@
             <td id="remark">{{ teacher.remark }}</td>
             <td class="td-manage">
 
+                <a title="打印" onclick="x_admin_show('下载报表','/admin_print/1/{{ teacher.id }}')"
+                   href="javascript:;">
+                    <i class="layui-icon">&#xe629;</i>
+                </a>
+
                 <a title="编辑" onclick="x_admin_show('编辑','/admin_teacher_edit/{{ teacher.id }}')" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
 
-                <a title="删除" onclick="member_leave(this,{{ teacher.id }})" href="javascript:;">
+                <a title="设置离职" onclick="member_leave(this,{{ teacher.id }})" href="javascript:;">
                     <i class="layui-icon">&#xe69c;</i>
                 </a>
             </td>

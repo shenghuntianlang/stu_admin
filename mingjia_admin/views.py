@@ -160,7 +160,7 @@ def get_student(page_index, is_new):
 
     return (paginator, page, limit, students)
 
-
+@user_decorator.login
 def admin_student_manager(request, page_index=1, is_new=1):
     """
     学员管理
@@ -189,7 +189,7 @@ def admin_student_manager(request, page_index=1, is_new=1):
 
     return render(request, 'admin-student.html', context=context)
 
-
+@user_decorator.login
 def get_search_students_params(request):
     """
     获取查询学生信息时，传递过来的查询参数
@@ -216,13 +216,17 @@ def get_search_students_params(request):
     return search_params
 
 
+# @user_decorator.login
 def get_students(request, is_new=1):
     students = None
     # 搜索
     # if not page_index.strip() and len(request.GET.keys()) > 0:
     search_params = get_search_students_params(request)
     # search_params1 = {'course_id': 1, 'name__contains': '王', 'is_delete': 0}
+
+
     students = Student.objects.filter(**search_params)
+
     for s in students:
         s.register_date = s.register_date.strftime("%Y-%m-%d")
 
@@ -238,8 +242,8 @@ def get_students(request, is_new=1):
 
     return render(request, 'admin-student.html', context)
 
-
-def del_student(request, stu_id):
+# @user_decorator.login
+def del_student(request, stu_id=None):
     """
     删除单个
     :param request:
@@ -278,7 +282,6 @@ def del_students(request):
 
     resp_json = json.dumps(resp.__dict__)
     return HttpResponse(resp_json, 'application/json')
-
 
 def admin_student_edit(request, stu_id):
     student = Student.objects.get(id=stu_id)
@@ -382,6 +385,7 @@ def admin_teacher_leave(request, teacher_id):
     if teacher.leave_date == None:
         # 设置为离职状态，添加离职时间
         teacher.leave_date = datetime.date.today()
+        teacher.is_delete = 1
         teacher.save()
         resp.result = "success"
         resp.remark = "设置成功"
@@ -392,11 +396,11 @@ def admin_teacher_leave(request, teacher_id):
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
-def admin_teacher_manager(request, page_index=1):
+def get_teacher_page(page_index):
     # 每页显示的条数
-    limit = 20
+    limit = 50
     # 获取所有的教师信息
-    teachers = Teacher.objects.all()
+    teachers = Teacher.objects.all();
 
     for t in teachers:
         t.birthday = t.birthday.strftime("%Y-%m-%d")
@@ -412,10 +416,16 @@ def admin_teacher_manager(request, page_index=1):
     # 获取当前页显示的内容
     curr_page = paginator.page(page_index)
 
-    context = {'teachers': curr_page,
+    return (curr_page, limit, total)
+
+
+def admin_teacher_manager(request, page_index=1):
+    teachers = get_teacher_page(page_index)
+
+    context = {'teachers': teachers[0],
                'page_index': page_index,
-               'limit': limit,
-               'total': total,
+               'limit': teachers[1],
+               'total': teachers[2],
                'edu': get_edu(),
                'is_search': False,
                'english_level': get_english_level()
@@ -464,11 +474,14 @@ def get_search_teachers_params(request):
     search_params = {}
     for key in request.GET.keys():
         value = request.GET[key]
+        if key == 'type' or key == 'is_search' or key == 'index':
+            continue
         if value.strip():
-            if key != 'id':
-                search_params[key + "__contains"] = value
+            if key == 'id' or key == 'is_delete':
+                if key == 'is_delete' and value != '':
+                    search_params[key] = value
             else:
-                search_params[key] = value
+                search_params[key + "__contains"] = value
     return search_params
 
 
@@ -480,7 +493,12 @@ def get_teachers(request):
     '''
     search_params = get_search_teachers_params(request)
     print(search_params)
+
     teachers = Teacher.objects.all().filter(**search_params)
+
+    if 'is_delete' in search_params.keys():
+        search_params['is_delete'] = int(search_params['is_delete'])
+
     print(teachers.count())
     context = {'teachers': teachers,
                'total': teachers.count(),
@@ -505,10 +523,7 @@ def get_teachers(request):
 
 def admin_add_course(request):
     classrooms = Classroom.objects.all()
-    teachers = Teacher.objects.all()
-
-    for t in teachers:
-        print(t.name)
+    teachers = Teacher.objects.all().filter(leave_date=None)
 
     context = {'classrooms': classrooms,
                'teachers': teachers,
@@ -537,6 +552,7 @@ def admin_add_course_handle(request):
     course.time = course_info['course_time']
     course.teacher_id = course_info['teacher_id']
     course.remark = course_info['remark']
+    course.is_delete = 0
 
     course.save()
 
@@ -547,20 +563,96 @@ def admin_add_course_handle(request):
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
-def admin_course_manager(request, index=1):
-    limit = 3
+def admin_course_edit(request, course_id):
+    course = Course.objects.get(id=course_id)
+    classrooms = Classroom.objects.all()
+    teachers = Teacher.objects.all().filter(leave_date=None)
+
+    context = {'classrooms': classrooms,
+               'teachers': teachers,
+               'course': course
+               }
+
+    return render(request, 'admin-course-edit.html', context)
+
+
+@csrf_exempt
+def admin_course_edit_handle(request):
+    print(request.body)
+    # {"course_name": "2017春季许岑新希望", "teacher_id": "1", "class_id": "2", "course_time": "17:00 - 18:00",
+    #  "remark": "这是一个备注信息"}
+    course_info = json.loads(request.body)
+
+    course = Course.objects.get(id=course_info['course_id'])
+
+    course.name = course_info['course_name']
+    course.teacher_id = course_info['teacher_id']
+    course.class_field_id = course_info['class_id']
+    course.time = course_info['course_time']
+    course.remark = course_info['remark']
+    course.save()
+
+    resp = Response()
+    resp.status = 200
+    resp.result = 'success'
+
+    return HttpResponse(json.dumps(resp.__dict__), content_type="application/json")
+
+
+def admin_course_del(request, course_id):
+    course = Course.objects.get(id=course_id)
+    course.is_delete = 1
+    course.save()
+    resp = Response()
+    resp.status = 200
+    resp.result = "success"
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
+@csrf_exempt
+def admin_del_courses(request):
+    """
+    批量删除
+    :param request:
+    :return:
+    """
+    del_list = json.loads(request.body)
+
+    # 批量删除
+    for course_id in del_list:
+        course = Course.objects.get(id=course_id)
+        course.is_delete = 1
+        course.save()
+
+    resp = Response();
+    resp.status = 200
+    resp.result = 'success'
+
+    resp_json = json.dumps(resp.__dict__)
+    return HttpResponse(resp_json, 'application/json')
+
+
+def get_courses_page(index):
+    limit = 50
     courses = Course.objects.all().filter(is_delete=0).filter(id__gt=1)
     print(courses.count())
     paginator = Paginator(courses, limit)
     page = paginator.page(index)
+
+    return (page, limit, courses)
+
+
+def admin_course_manager(request, index=1):
+    print (index)
+    courses_info = get_courses_page(index)
     classrooms = Classroom.objects.all().filter(is_delete=0)
     teachers = Teacher.objects.all().filter(is_delete=0)
 
-    context = {'courses': page,
+    context = {'courses': courses_info[0],
                'choice_courses': get_courses(),
-               'limit': limit,
+               'limit': courses_info[1],
                'index': index,
-               'total': len(courses),
+               'total': len(courses_info[2]),
                'classrooms': classrooms,
                'teachers': teachers,
                'is_search': False
@@ -583,9 +675,11 @@ def get_search_courses_params(request):
 
     search_params = {}
     for key in request.GET.keys():
-
         value = request.GET[key]
         if value.strip():
+            # 用于过滤打印时上传的参数
+            if key == 'type' or key == 'is_search' or key == 'is_new' or key == 'index':
+                continue
             if key == 'id':
                 search_params[key] = request.GET[key]
             else:
@@ -878,6 +972,205 @@ def get_current_time():
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
 
 
+def create_teacher_table(teacher_id):
+    teacher = Teacher.objects.get(id=teacher_id)
+
+    # 格式化时间
+    teacher.entry_date = teacher.entry_date.strftime('%Y-%m-%d')
+    teacher.birthday = teacher.birthday.strftime('%Y-%m-%d')
+    if teacher.leave_date != None:
+        teacher.leave_date = teacher.leave_date.strftime('%Y-%m-%d')
+
+    """
+    创建教师信息的表格
+    :param context:
+    :return:
+    """
+
+    # 创建工作簿
+    wbk = xlwt.Workbook('utf-8')
+    # 创建工作表
+    sheet1 = wbk.add_sheet('Sheet1', cell_overwrite_ok=True)
+
+    font = xlwt.Font()
+
+    # 设置单元格中标题文字的显示样式
+    style_title = xlwt.easyxf('font:height 420;')  # 36pt,类型小初的字号
+    alignment_title = xlwt.Alignment()  # Create Alignment
+    alignment_title.horz = xlwt.Alignment.HORZ_CENTER  # May be: HORZ_GENERAL, HORZ_LEFT, HORZ_CENTER, HORZ_RIGHT, HORZ_FILLED, HORZ_JUSTIFIED, HORZ_CENTER_ACROSS_SEL, HORZ_DISTRIBUTED
+    style_title.alignment = alignment_title
+    # 设置第二列和第四列的宽度
+
+    # 设置单元格的宽度
+    for i in xrange(0, 6):
+        print
+        i
+        if i % 2 == 0:
+            sheet1.col(i).width = 256 * 15
+        else:
+            sheet1.col(i).width = 256 * 20
+
+    # 标题
+    sheet1.write_merge(0, 0, 0, 4, '名佳英语教师信息表', style_title)
+    # 设置正文文本再单元格中的显示样式
+    style_content = xlwt.easyxf('font:height 280;')
+    alignment_content = xlwt.Alignment()
+    alignment_content.horz = xlwt.Alignment.WRAP_AT_RIGHT
+    style_content.alignment = alignment_content
+    borders = xlwt.Borders()
+    borders.top = xlwt.Borders.DOUBLE
+    borders.top_colour = 0x40
+    style_border = xlwt.XFStyle()
+    style_border.borders = borders
+    startLine = 3
+    for i in xrange(0, 5):
+        sheet1.write(startLine + 1, i, "", style_border)
+
+    sheet1.write(startLine + 2, 0, '打印时间:', style_content)
+
+    sheet1.write(startLine + 2, 1, get_current_time(), style_content)
+
+    sheet1.write(startLine + 4, 0, '员工号:', style_content)
+
+    sheet1.write(startLine + 4, 1, teacher.id, style_content)
+
+    sheet1.write(startLine + 4, 2, '姓名:', style_content)
+
+    sheet1.write(startLine + 4, 3, teacher.name, style_content)
+
+    sheet1.write(startLine + 6, 0, '性别:', style_content)
+
+    sheet1.write(startLine + 6, 1, teacher.gender, style_content)
+
+    sheet1.write(startLine + 6, 2, '出生日期:', style_content)
+
+    sheet1.write(startLine + 6, 3, teacher.birthday, style_content)
+
+    sheet1.write(startLine + 8, 0, '身份证号码:', style_content)
+
+    sheet1.write(startLine + 8, 1, teacher.id_number, style_content)
+
+    sheet1.write(startLine + 10, 0, '学历:', style_content)
+    sheet1.write(startLine + 10, 1, teacher.edu, style_content)
+
+    sheet1.write(startLine + 10, 2, '英语水平:', style_content)
+
+    sheet1.write(startLine + 10, 3, teacher.english_level, style_content)
+
+    sheet1.write(startLine + 12, 0, '入职时间:', style_content)
+
+    sheet1.write(startLine + 12, 1, teacher.entry_date, style_content)
+
+    if teacher.leave_date != None:
+        sheet1.write(startLine + 12, 2, '离职时间:', style_content)
+        sheet1.write(startLine + 12, 3, teacher.leave_date, style_content)
+
+    sheet1.write(startLine + 14, 0, '备注:', style_content)
+    sheet1.write(startLine + 14, 1, teacher.remark, style_content)
+
+    table_name = str(time.time()) + teacher.name + ".xls"
+
+    wbk.save('mingjia_admin/file/' + table_name)
+
+    return table_name
+
+
+def create_course_table(id):
+    """
+    创建班次报表
+    :param id:
+    :return:
+    """
+
+    course = Course.objects.get(id=id)
+
+    """
+       创建学生信息的表格
+       :param context:
+       :return:
+       """
+
+    # 创建工作簿
+    wbk = xlwt.Workbook('utf-8')
+    # 创建工作表
+    sheet1 = wbk.add_sheet('Sheet1', cell_overwrite_ok=True)
+
+    font = xlwt.Font()
+
+    # 设置单元格中标题文字的显示样式
+    style_title = xlwt.easyxf('font:height 420;')  # 36pt,类型小初的字号
+    alignment_title = xlwt.Alignment()  # Create Alignment
+    alignment_title.horz = xlwt.Alignment.HORZ_CENTER  # May be: HORZ_GENERAL, HORZ_LEFT, HORZ_CENTER, HORZ_RIGHT, HORZ_FILLED, HORZ_JUSTIFIED, HORZ_CENTER_ACROSS_SEL, HORZ_DISTRIBUTED
+    style_title.alignment = alignment_title
+    # 设置第二列和第四列的宽度
+
+    # 设置单元格的宽度
+    for i in xrange(0, 6):
+        print
+        i
+        if i % 2 == 0:
+            sheet1.col(i).width = 256 * 15
+        else:
+            sheet1.col(i).width = 256 * 20
+
+    # 标题
+    sheet1.write_merge(0, 0, 0, 4, '名佳英语班次信息表', style_title)
+    # 设置正文文本再单元格中的显示样式
+    style_content = xlwt.easyxf('font:height 280;')
+    alignment_content = xlwt.Alignment()
+    alignment_content.horz = xlwt.Alignment.WRAP_AT_RIGHT
+    style_content.alignment = alignment_content
+    borders = xlwt.Borders()
+    borders.top = xlwt.Borders.DOUBLE
+    borders.top_colour = 0x40
+    style_border = xlwt.XFStyle()
+    style_border.borders = borders
+    startLine = 1
+    sheet1.write(startLine + 1, 0, '打印时间:', style_content)
+    sheet1.write(startLine + 1, 1, get_current_time(), style_content)
+    for i in xrange(0, 5):
+        sheet1.write(startLine + 2, i, "", style_border)
+
+    sheet1.write(startLine + 4, 0, '班次号:', style_content)
+
+    sheet1.write(startLine + 4, 1, course.id, style_content)
+
+    sheet1.write(startLine + 4, 2, '班次名:', style_content)
+
+    sheet1.write(startLine + 4, 3, course.name, style_content)
+
+    sheet1.write(startLine + 6, 0, '上课时间:', style_content)
+
+    sheet1.write(startLine + 6, 1, course.time, style_content)
+
+    sheet1.write(startLine + 8, 0, '上课地点:', style_content)
+
+    sheet1.write(startLine + 8, 1, course.class_field.name + "-" + course.class_field.school.school_name, style_content)
+
+    sheet1.write(startLine + 10, 0, '班次人数:', style_content)
+
+    sheet1.write(startLine + 10, 1, course.class_field.places, style_content)
+
+    sheet1.write(startLine + 12, 0, '备注:', style_content)
+
+    sheet1.write(startLine + 12, 1, course.remark, style_content)
+
+    for i in xrange(0, 5):
+        sheet1.write(startLine + 14, i, "", style_border)
+
+        sheet1.write(startLine + 16, 0, '任课教师:', style_content)
+        sheet1.write(startLine + 16, 1, course.teacher.name, style_content)
+
+        sheet1.write(startLine + 18, 0, '联系方式:', style_content)
+        sheet1.write(startLine + 18, 1, course.teacher.phone, style_content)
+
+    table_name = str(time.time()) + course.name + ".xls"
+
+    wbk.save('mingjia_admin/file/' + table_name)
+
+    return table_name
+
+
 def admin_print(request, type, id):
     """
     生成报表
@@ -901,9 +1194,113 @@ def admin_print(request, type, id):
     if int(type) == 0:
         # 创建学员报表
         table_name = create_student_table(id)
+    elif int(type) == 1:
+        # 创建教师报表
+        table_name = create_teacher_table(id)
+    elif int(type) == 2:
+        # 创建班次报表
+        table_name = create_course_table(id)
 
     context = {'table_name': table_name}
     return render(request, 'admin-print.html', context)
+
+
+def create_teachers_table(teachers):
+    """
+    批量创建教师信息表
+    :param teachers:
+    :return:
+    """
+    wbk = xlwt.Workbook('utf-8')
+    sheet1 = wbk.add_sheet('Sheet1', cell_overwrite_ok=True)
+
+    header = ['员工号', '姓名', '性别', '身份证', '电话', '学历', '英语水平']
+
+    # 设置表格单元格的宽度
+    sheet1.col(0).width = 256 * 8
+    sheet1.col(1).width = 256 * 14
+    sheet1.col(2).width = 256 * 8
+    sheet1.col(3).width = 256 * 20
+    sheet1.col(4).width = 256 * 15
+    sheet1.col(5).width = 256 * 15
+    sheet1.col(6).width = 256 * 14
+
+    style_title = xlwt.easyxf('font:height 220;')  # 36pt,类型小初的字号
+    alignment_title = xlwt.Alignment()  # Create Alignment
+    alignment_title.horz = xlwt.Alignment.HORZ_CENTER  # May be: HORZ_GENERAL, HORZ_LEFT, HORZ_CENTER, HORZ_RIGHT, HORZ_FILLED, HORZ_JUSTIFIED, HORZ_CENTER_ACROSS_SEL, HORZ_DISTRIBUTED
+    style_title.alignment = alignment_title
+
+    # 设置表头文字
+    for i in xrange(header.__len__()):
+        sheet1.write(0, i, header[i], style_title)
+
+    line = 2
+    for t in teachers:
+        sheet1.write(line, 0, t.id, style_title)
+        sheet1.write(line, 1, t.name, style_title)
+        sheet1.write(line, 2, t.gender, style_title)
+        sheet1.write(line, 3, t.id_number, style_title)
+        sheet1.write(line, 4, t.phone, style_title)
+        sheet1.write(line, 5, t.edu, style_title)
+        sheet1.write(line, 6, t.english_level, style_title)
+        line += 1
+
+    table_name = str(time.time()) + "- 教师信息表.xls"
+
+    wbk.save('mingjia_admin/file/' + table_name)
+
+    return table_name
+
+
+def create_courses_table(coureses):
+    """
+    批量打印班次信息
+    :param courese:
+    :return:
+    """
+
+    """
+      批量创建教师信息表
+      :param teachers:
+      :return:
+      """
+    wbk = xlwt.Workbook('utf-8')
+    sheet1 = wbk.add_sheet('Sheet1', cell_overwrite_ok=True)
+
+    header = ['班次号', '班次名', '任课教师', '上课时间', '上课教室']
+
+    # 设置表格单元格的宽度
+    sheet1.col(0).width = 256 * 8
+    sheet1.col(1).width = 256 * 30
+    sheet1.col(2).width = 256 * 12
+    sheet1.col(3).width = 256 * 25
+    sheet1.col(4).width = 256 * 18
+
+    style_title = xlwt.easyxf('font:height 220;')  # 36pt,类型小初的字号
+    alignment_title = xlwt.Alignment()  # Create Alignment
+    alignment_title.horz = xlwt.Alignment.HORZ_CENTER  # May be: HORZ_GENERAL, HORZ_LEFT, HORZ_CENTER, HORZ_RIGHT, HORZ_FILLED, HORZ_JUSTIFIED, HORZ_CENTER_ACROSS_SEL, HORZ_DISTRIBUTED
+    style_title.alignment = alignment_title
+
+    # 设置表头文字
+    for i in xrange(header.__len__()):
+        sheet1.write(0, i, header[i], style_title)
+
+    line = 2
+    for c in coureses:
+        sheet1.write(line, 0, c.id, style_title)
+        sheet1.write(line, 1, c.name, style_title)
+        sheet1.write(line, 2, c.teacher.name, style_title)
+        sheet1.write(line, 3, c.time, style_title)
+        sheet1.write(line, 4, c.class_field.name+"-"+c.class_field.school.school_name, style_title)
+
+        line += 1
+
+    table_name = str(time.time()) + "- 班次信息表.xls"
+
+    wbk.save('mingjia_admin/file/' + table_name)
+
+    return table_name
+
 
 
 def admin_print_more(request):
@@ -927,10 +1324,6 @@ def admin_print_more(request):
                 print(str(s.id) + "-->" + s.name)
             table_name = create_students_table(students)
             context = {'table_name': table_name}
-
-
-
-
         # 根据搜索的结果生成报表
         else:
             search_params = get_search_students_params(request)
@@ -942,6 +1335,45 @@ def admin_print_more(request):
             print('根据搜索的结果生成报表')
             table_name = create_students_table(students)
             context = {'table_name': table_name}
+
+    # type -> 1 -> 教师
+    elif int(request.GET['type']) == 1:
+        if request.GET['is_search'] == 'False':
+            page_index = request.GET['index']
+            print("教师，按照页数打印")
+            teachers = get_teacher_page(page_index)[0]
+            table_name = create_teachers_table(teachers)
+            context = {'table_name': table_name}
+        else:
+            print("教师, 按照搜索打印")
+            search_params = get_search_teachers_params(request)
+            print(search_params)
+            teachers = Teacher.objects.all().filter(**search_params)
+            table_name = create_teachers_table(teachers)
+            context = {'table_name': table_name}
+    # type -> 2 -> 班次
+    elif int(request.GET['type']) == 2:
+        if request.GET['is_search'] == 'False':
+            page_index = int(request.GET['index'])
+            print (page_index)
+            print("班次，按照页数打印:")
+            courses = get_courses_page(page_index)[0]
+            for c in courses:
+                print(c.name)
+            table_name = create_courses_table(courses)
+            context = {'table_name': table_name}
+
+        else:
+            print('班次，按照搜索打印')
+            search_params = get_search_courses_params(request)
+            courses = Course.objects.all().filter(**search_params).filter(id__gt=1)
+            table_name = create_courses_table(courses)
+            for c in courses:
+
+                print(c.name)
+
+
+
 
     return render(request, 'admin-print.html', context)
 

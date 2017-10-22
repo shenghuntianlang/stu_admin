@@ -87,7 +87,7 @@
     <button class="layui-btn layui-btn-danger" onclick="del_all()"><i class="layui-icon"></i>批量删除</button>
 
     <button class="layui-btn"
-            onclick="x_admin_show('添加用户','/admin_print_more/?type=0&is_search={{ is_search }}&is_new={{ is_new }}&index={{ page_index }}&course_id={{ search_params.course_id }}&school_name={{ search_params.school_name__contains }}&phone={{ search_params.phone__contains }}&name={{ search_params.name__contains }}&remark={{ search_params.remark__contains }}')">
+            onclick="x_admin_show('批量打印','/admin_print_more/?type=0&is_search={{ is_search }}&is_new={{ is_new }}&index={{ page_index }}&course_id={{ search_params.course_id }}&school_name={{ search_params.school_name__contains }}&phone={{ search_params.phone__contains }}&name={{ search_params.name__contains }}&remark={{ search_params.remark__contains }}')">
 
         <i class="layui-icon"></i>打印显示学员信息
 
@@ -243,6 +243,8 @@
     function del_all(argument) {
 
         var data = tableCheck.getData();
+
+        console.log(data)
 
         var json = JSON.stringify(data)
 

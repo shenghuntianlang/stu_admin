@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 
 
 def login(func):
-    def login_fun(request):
+    def login_fun(request,p=1, p1=2):
         if 'username' in request.COOKIES.keys():
             admin = Admin.objects.all().filter(name=request.COOKIES['username'])
             if admin.count() != 1:
