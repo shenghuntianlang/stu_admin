@@ -164,6 +164,7 @@ def get_student(page_index, is_new):
 def admin_student_manager(request, page_index=1, is_new=1):
     """
     学员管理
+    111
     :param request:
     :param page_index:
     :param is_new: 1->新生 0-> 普通学员 用于标记是否是新生(班次为暂无安排的被标记为新生)
