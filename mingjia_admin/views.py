@@ -160,6 +160,7 @@ def get_student(page_index, is_new):
 
     return (paginator, page, limit, students)
 
+
 @user_decorator.login
 def admin_student_manager(request, page_index=1, is_new=1):
     """
@@ -189,6 +190,7 @@ def admin_student_manager(request, page_index=1, is_new=1):
                'is_search': False}
 
     return render(request, 'admin-student.html', context=context)
+
 
 @user_decorator.login
 def get_search_students_params(request):
@@ -243,6 +245,7 @@ def get_students(request, is_new=1):
 
     return render(request, 'admin-student.html', context)
 
+
 # @user_decorator.login
 def del_student(request, stu_id=None):
     """
@@ -283,6 +286,7 @@ def del_students(request):
 
     resp_json = json.dumps(resp.__dict__)
     return HttpResponse(resp_json, 'application/json')
+
 
 def admin_student_edit(request, stu_id):
     student = Student.objects.get(id=stu_id)
@@ -644,7 +648,7 @@ def get_courses_page(index):
 
 
 def admin_course_manager(request, index=1):
-    print (index)
+    print(index)
     courses_info = get_courses_page(index)
     classrooms = Classroom.objects.all().filter(is_delete=0)
     teachers = Teacher.objects.all().filter(is_delete=0)
@@ -722,7 +726,7 @@ def admin_classroom(request, index):
     """
     print("index-->" + index)
 
-    limit = 3
+    limit = 50
     classrooms = Classroom.objects.all().filter(is_delete=0)
     print(classrooms.count())
     paginator = Paginator(classrooms, limit)
@@ -819,6 +823,70 @@ def get_classroom(request):
     return render(request, "admin-classroom.html", context)
 
 
+def edit_classroom(request, classroom_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    school = School.objects.all().filter(is_delete=0)
+    print(school)
+    context = {'classroom': classroom,
+               'schools': school
+               }
+    return render(request, 'admin-classroom-edit.html', context)
+
+
+def admin_classroom_del(request, classroom_id):
+    classroom = Classroom.objects.get(id=classroom_id)
+    classroom.is_delete = 1
+    classroom.save()
+    resp = Response()
+    resp.status = 200
+    resp.result = "success"
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
+@csrf_exempt
+def admin_del_classrooms(request):
+    """
+    批量删除
+    :param request:
+    :return:
+    """
+    del_list = json.loads(request.body)
+
+    # 批量删除
+    for classroom_id in del_list:
+        classroom = Classroom.objects.get(id=classroom_id)
+        classroom.is_delete = 1
+        classroom.save()
+
+    resp = Response();
+    resp.status = 200
+    resp.result = 'success'
+
+    resp_json = json.dumps(resp.__dict__)
+    return HttpResponse(resp_json, 'application/json')
+
+
+@csrf_exempt
+def edit_classroom_handle(request):
+    classroom_info = json.loads(request.body)
+    # {u'course_id': 1, u'remark': u'None', u'name': u'\u4e00\u53f7\u6559\u5ba4', u'places': u'40', u'school_id': u'1'}
+
+    classroom = Classroom.objects.get(id=classroom_info['id'])
+
+    classroom.name = classroom_info['name']
+    classroom.places = classroom_info['places']
+    classroom.school_id = classroom_info['school_id']
+    classroom.remark = classroom_info['remark']
+
+    classroom.save()
+
+    resp = Response()
+    resp.status = 200
+    resp.result = 'success'
+
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
 def admin_campus(request, index):
     """
     分页浏览校区信息
@@ -837,6 +905,7 @@ def admin_campus(request, index):
                'index': index,
                'total': len(schools),
                'classrooms': page,
+               'is_local_school': False
                }
 
     return render(request, 'admin-campus.html', context)
@@ -884,6 +953,7 @@ def admin_school(request, index):
                'index': index,
                'total': len(schools),
                'classrooms': page,
+               'is_local_school': True
                }
 
     return render(request, 'admin-campus.html', context)
@@ -900,17 +970,94 @@ def admin_add_school(request):
 
     school_info = json.loads(request.body, 'utf-8')
 
-    school = School()
-    school.school_name = school_info['school_name']
-    school.school_address = school_info['school_address']
-    school.remark = school_info['remark']
-    school.is_delete = 2
-    school.save()
+
+
+    if school_info['is_local_school'] == 'true':
+        school = School()
+        school.school_name = school_info['school_name']
+        school.school_address = school_info['school_address']
+        school.remark = school_info['remark']
+        school.is_delete = 1
+        school.save()
+        print('本校校区添加')
+
+    elif school_info['is_local_school'] == 'false':
+
+        school = School()
+        school.school_name = school_info['school_name']
+        school.school_address = school_info['school_address']
+        school.remark = school_info['remark']
+        school.is_delete = 2
+        school.save()
+        print('扬州市本地学校添加')
+
+    print ('状态-》'+str(school.is_delete))
 
     resp = Response()
     resp.status = 200
     resp.result = 'success'
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
+def edit_school(request, school_id):
+    school = School.objects.get(id=school_id)
+    context = {'school': school}
+
+    return render(request, 'admin-school-edit.html', context)
+
+
+@csrf_exempt
+def edit_school_handle(request):
+    school_info = json.loads(request.body)
+
+    school = School.objects.get(id=school_info['id'])
+
+    school.school_name = school_info['school_name']
+    school.school_address = school_info['school_address']
+    school.remark = school_info['remark']
+    school.save()
+
+    resp = Response()
+    resp.status = 200
+    resp.result = 'success'
+
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
+
+def admin_school_del(request, school_id):
+    school = School.objects.get(id=school_id)
+    print (school.school_name)
+    school.is_delete = 1
+    school.save()
+    resp = Response()
+    resp.status = 200
+    resp.result = "success"
+    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
+
+
+@csrf_exempt
+def admin_del_schools(request):
+    """
+    批量删除
+    :param request:
+    :return:
+    """
+    del_list = json.loads(request.body)
+
+    # 批量删除
+    for school_id in del_list:
+        school = School.objects.get(id=school_id)
+        school.is_delete = 1
+        print(school.school_name)
+        school.save()
+
+    resp = Response()
+    resp.status = 200
+    resp.result = 'success'
+
+    resp_json = json.dumps(resp.__dict__)
+    return HttpResponse(resp_json, 'application/json')
 
 
 def admin_download(request, file_name):
@@ -1292,7 +1439,7 @@ def create_courses_table(coureses):
         sheet1.write(line, 1, c.name, style_title)
         sheet1.write(line, 2, c.teacher.name, style_title)
         sheet1.write(line, 3, c.time, style_title)
-        sheet1.write(line, 4, c.class_field.name+"-"+c.class_field.school.school_name, style_title)
+        sheet1.write(line, 4, c.class_field.name + "-" + c.class_field.school.school_name, style_title)
 
         line += 1
 
@@ -1301,7 +1448,6 @@ def create_courses_table(coureses):
     wbk.save('mingjia_admin/file/' + table_name)
 
     return table_name
-
 
 
 def admin_print_more(request):
@@ -1356,7 +1502,7 @@ def admin_print_more(request):
     elif int(request.GET['type']) == 2:
         if request.GET['is_search'] == 'False':
             page_index = int(request.GET['index'])
-            print (page_index)
+            print(page_index)
             print("班次，按照页数打印:")
             courses = get_courses_page(page_index)[0]
             for c in courses:
@@ -1370,11 +1516,7 @@ def admin_print_more(request):
             courses = Course.objects.all().filter(**search_params).filter(id__gt=1)
             table_name = create_courses_table(courses)
             for c in courses:
-
                 print(c.name)
-
-
-
 
     return render(request, 'admin-print.html', context)
 

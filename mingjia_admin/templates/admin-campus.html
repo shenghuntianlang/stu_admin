@@ -41,11 +41,29 @@
     <form class="layui-form  x-so">
 
 
-        <label class="layui-label">&nbsp;&nbsp;校区名:&nbsp;&nbsp; </label>
-        <input type="text" name="school_name" placeholder="填写校区名"
+        <label class="layui-label">{% if is_local_school == True %}
+            学校名:
+
+        {% else %}
+
+            校区名:
+        {% endif %}
+
+        </label>
+        <input type="text" name="school_name"
                autocomplete="off" class="layui-input">
-        <label class="layui-label">&nbsp;&nbsp;校区所在地址: &nbsp;&nbsp;</label>
-        <input type="text" name="school_address" placeholder="填写校区所在地址"
+        <label class="layui-label">&nbsp;&nbsp;
+
+            {% if is_local_school == True %}
+
+                学校所在地址:
+            {% else %}
+
+                校区所在地址:
+            {% endif %}
+
+            &nbsp;&nbsp;</label>
+        <input type="text" name="school_address"
                autocomplete="off" class="layui-input">
         <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
         <input type="text" name="remark" placeholder="备注信息"
@@ -74,9 +92,39 @@
             <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i
                     class="layui-icon">&#xe605;</i></div>
         </th>
-        <th>校区号</th>
-        <th>校区名</th>
-        <th>校区地址</th>
+        <th>
+            {% if is_local_school == True %}
+
+                学校号:
+            {% else %}
+
+                校区号:
+            {% endif %}
+
+
+        </th>
+        <th>
+
+            {% if is_local_school == True %}
+
+                学校名:
+            {% else %}
+
+                校区名:
+            {% endif %}
+
+        </th>
+        <th>
+
+            {% if is_local_school == True %}
+
+                学校地址:
+            {% else %}
+
+                校区地址:
+            {% endif %}
+
+        </th>
         <th>备注</th>
         <th>操作</th>
     </thead>
@@ -85,7 +133,7 @@
         <tr>
 
             <td id="check">
-                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='{{ student.id }}'><i
+                <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='{{ school.id }}'><i
                         class="layui-icon">&#xe605;</i>
                 </div>
             </td>
@@ -95,10 +143,10 @@
             <td id="remark">{{ school.remark }}</td>
 
             <td class="td-manage">
-                <a title="编辑" onclick="x_admin_show('编辑','/admin_student_edit/{{ student.id }}')" href="javascript:;">
+                <a title="编辑" onclick="x_admin_show('编辑','/edit_school/{{ school.id }}')" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
-                <a title="删除" onclick="member_del(this,{{ student.id }})" href="javascript:;">
+                <a title="删除" onclick="member_del(this,{{ school.id }})" href="javascript:;">
                     <i class="layui-icon">&#xe640;</i>
                 </a>
             </td>
@@ -165,7 +213,7 @@
             $.ajax({
 
                 'type': 'get',
-                'url': '/del_student/' + id,
+                'url': '/admin_school_del/' + id,
                 'success': function (data) {
 
                     if (data.result == 'success') {
@@ -199,7 +247,7 @@
 
             $.ajax({
 
-                'url': '/del_students/',
+                'url': '/admin_del_schools/',
                 'type': 'post',
                 'data': json,
                 'success': function (data) {
@@ -244,11 +292,19 @@
             console.log(data);
             console.log('打印结束')
             //发异步，把数据提交给php
+
+            data.field.is_local_school =  {% if is_local_school %}
+
+                'false'
+            {% else %}
+                'true'
+
+            {% endif %}
             var json_student_info = JSON.stringify(data.field);
 
             $.ajax({
                 type: 'post',
-                url: '/admin_add_campus/',
+                url: '/admin_add_school/',
                 contentType: 'application/json;charset=utf-8',
                 data: json_student_info,
                 success: function (data) {
