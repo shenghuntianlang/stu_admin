@@ -17,6 +17,7 @@ from user import user_decorator
 KEY = 'username'
 limit = 50
 
+
 # Create your views here.
 @user_decorator.login
 def test(request):
@@ -169,7 +170,8 @@ def get_student(page_index, is_new):
     return (paginator, page, limit, students)
 
 
-def admin_student_manager(request, page_index=1, is_new=1):
+@user_decorator.login
+def admin_student_manager(request):
     """
     学员管理
     111
@@ -178,6 +180,9 @@ def admin_student_manager(request, page_index=1, is_new=1):
     :param is_new: 1->新生 0-> 普通学员 用于标记是否是新生(班次为暂无安排的被标记为新生)
     :return:
     """
+
+    page_index = request.GET['page_index']
+    is_new = request.GET['is_new']
 
     print(is_new)
 
@@ -226,17 +231,11 @@ def get_search_students_params(request):
     return search_params
 
 
-# @user_decorator.login
-def get_students(request, is_new=1):
-    students = None
+def get_students(request, is_new):
+
     # 搜索
-    # if not page_index.strip() and len(request.GET.keys()) > 0:
     search_params = get_search_students_params(request)
-    # search_params1 = {'course_id': 1, 'name__contains': '王', 'is_delete': 0}
-
-
     students = Student.objects.filter(**search_params)
-
     for s in students:
         s.register_date = s.register_date.strftime("%Y-%m-%d")
 
@@ -253,14 +252,16 @@ def get_students(request, is_new=1):
     return render(request, 'admin-student.html', context)
 
 
-# @user_decorator.login
-def del_student(request, stu_id=None):
+@user_decorator.login
+def del_student(request):
     """
     删除单个
     :param request:
     :param stu_id:
     :return:
     """
+
+    stu_id = request.GET['stu_id']
     resp = Response()
     resp.status = 200
     resp.result = 'success'

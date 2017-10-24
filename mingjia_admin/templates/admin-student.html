@@ -172,16 +172,6 @@
 </div>
 <script>
 
-    //计算所在年级
-    function calculateGrade(entrance_date) {
-
-
-        console.log(entrance_date)
-
-        return entrance_date
-
-    }
-
     layui.use('laydate', function () {
         var laydate = layui.laydate;
 
@@ -211,7 +201,7 @@
 
                 if (!first) {
 
-                    window.location.href = '/admin_student/' + obj.curr + '/{{ is_new }}';
+                    window.location.href = '/admin_student/?page_index=' + obj.curr + '&is_news={{ is_new }}';
 
                 }
 
@@ -234,7 +224,7 @@
             $.ajax({
 
                 'type': 'get',
-                'url': '/del_student/' + id,
+                'url': '/del_student/?stu_id=' + id,
                 'success': function (data) {
 
                     if (data.result == 'success') {
