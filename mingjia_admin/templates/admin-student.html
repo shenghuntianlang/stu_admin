@@ -131,7 +131,7 @@
             <td id="course_name">{{ student.course.name }}</td>
             <td id="phone">{{ student.phone }}</td>
             <td id="school_name">{{ student.school_name }}</td>
-            <td id="grade">{{ 3 }}</td>
+            <td id="grade">calculateGrade({{ student.entrance_time }})</td>
             <td id="class_name">{{ student.class_name }}</td>
             <td id="register">{{ student.register_date }}</td>
             <td id="remark">{{ student.remark }}</td>
@@ -166,6 +166,17 @@
 
 </div>
 <script>
+
+    //计算所在年级
+    function calculateGrade(entrance_date){
+
+
+        console.log(entrance_date)
+
+        return entrance_date
+
+    }
+
     layui.use('laydate', function () {
         var laydate = layui.laydate;
 

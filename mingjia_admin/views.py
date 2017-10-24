@@ -156,6 +156,7 @@ def get_student(page_index, is_new):
     # 当前页面的内容
     page = paginator.page(int(page_index))
     for p in page:
+        p.entrance_time = p.entrance_time.strftime("%Y-%m-%d")
         p.register_date = p.register_date.strftime("%Y-%m-%d")
 
     return (paginator, page, limit, students)
@@ -175,6 +176,8 @@ def admin_student_manager(request, page_index=1, is_new=1):
     print(is_new)
 
     stu = get_student(page_index, is_new)
+
+
 
     # 页面展示的范围
     page_range = stu[0].page_range
@@ -1223,6 +1226,9 @@ def create_teacher_table(teacher_id):
     return table_name
 
 
+
+
+
 def create_course_table(id):
     """
     创建班次报表
@@ -1700,3 +1706,25 @@ def del_files(parent):
     if path_dirs.__len__() > 0:
         for f in path_dirs:
             os.remove(parent + "/" + f)
+
+
+def backup_db(username, password, db_name):
+    """
+    数据库备份，将数据库转储为sql脚本
+    :param uname:
+    :param pwd:
+    :param db_name:
+    :return:
+    """
+    # 在当前项目下创建存储备份文件的文件夹
+    curr_path = os.getcwd()
+    backup_path = curr_path + '/back_up'
+    if not os.path.exists(backup_path):
+        os.mkdir(backup_path)
+
+    str_cmd = 'mysqldump -u' + username + ' -p' + password + " "+db_name + ' > ' + backup_path + '/mingjia_backup.sql'
+    # 转储sql
+    os.system(str_cmd)
+
+    # 将sql脚本的路径返回
+    return backup_path + '/mingjia_backup.sql'
