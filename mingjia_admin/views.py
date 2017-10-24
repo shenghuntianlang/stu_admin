@@ -177,8 +177,6 @@ def admin_student_manager(request, page_index=1, is_new=1):
 
     stu = get_student(page_index, is_new)
 
-
-
     # 页面展示的范围
     page_range = stu[0].page_range
 
@@ -973,8 +971,6 @@ def admin_add_school(request):
 
     school_info = json.loads(request.body, 'utf-8')
 
-
-
     if school_info['is_local_school'] == 'true':
         school = School()
         school.school_name = school_info['school_name']
@@ -994,7 +990,7 @@ def admin_add_school(request):
         school.save()
         print('扬州市本地学校添加')
 
-    print ('状态-》'+str(school.is_delete))
+    print('状态-》' + str(school.is_delete))
 
     resp = Response()
     resp.status = 200
@@ -1027,10 +1023,9 @@ def edit_school_handle(request):
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
-
 def admin_school_del(request, school_id):
     school = School.objects.get(id=school_id)
-    print (school.school_name)
+    print(school.school_name)
     school.is_delete = 1
     school.save()
     resp = Response()
@@ -1061,30 +1056,6 @@ def admin_del_schools(request):
 
     resp_json = json.dumps(resp.__dict__)
     return HttpResponse(resp_json, 'application/json')
-
-
-def admin_download(request, file_name):
-    """
-    文件下载
-    :param request:
-    :return:
-    """
-
-    def file_iterator(file_name, chunk_size=512):
-        # 需要加上‘rb’,负责下载的文件将是乱码
-        with open(file_name, 'rb') as f:
-            while True:
-                c = f.read(chunk_size)
-                if c:
-                    yield c
-                else:
-                    break
-
-    the_file_name = "mingjia_admin/file/" + file_name
-    response = StreamingHttpResponse(file_iterator(the_file_name))
-    response['Content-Type'] = 'application/octet-stream'
-    response['Content-Disposition'] = 'attachment;filename="{0}"'.format(the_file_name)
-    return response
 
 
 class Response:
@@ -1226,9 +1197,6 @@ def create_teacher_table(teacher_id):
     return table_name
 
 
-
-
-
 def create_course_table(id):
     """
     创建班次报表
@@ -1335,6 +1303,7 @@ def admin_print(request, type, id):
     :return:
     """
     # 生成报表前先清空之前已经存在的报表文件
+
     del_files('mingjia_admin/file')
 
     # type: # 打印的类型
@@ -1718,13 +1687,45 @@ def backup_db(username, password, db_name):
     """
     # 在当前项目下创建存储备份文件的文件夹
     curr_path = os.getcwd()
-    backup_path = curr_path + '/back_up'
+    backup_path = 'mingjia_admin/file/'
     if not os.path.exists(backup_path):
         os.mkdir(backup_path)
 
-    str_cmd = 'mysqldump -u' + username + ' -p' + password + " "+db_name + ' > ' + backup_path + '/mingjia_backup.sql'
+    str_cmd = 'mysqldump -u' + username + ' -p' + password + " " + db_name + ' > ' + backup_path + '/mingjia_backup.sql'
     # 转储sql
     os.system(str_cmd)
 
     # 将sql脚本的路径返回
-    return backup_path + '/mingjia_backup.sql'
+    return 'mingjia_backup.sql'
+
+
+def admin_backup(request):
+    del_files('mingjia_admin/file')
+    db_name = backup_db('root', 'wangke0310', 'mingjia')
+    print(db_name)
+    context = {'db_name': db_name}
+    return render(request, 'admin-backup.html', context=context)
+
+
+def admin_download(request, file_name):
+    """
+    文件下载
+    :param request:
+    :return:
+    """
+
+    def file_iterator(file_name, chunk_size=512):
+        # 需要加上‘rb’,负责下载的文件将是乱码
+        with open(file_name, 'rb') as f:
+            while True:
+                c = f.read(chunk_size)
+                if c:
+                    yield c
+                else:
+                    break
+
+    the_file_name = "mingjia_admin/file/" + file_name
+    response = StreamingHttpResponse(file_iterator(the_file_name))
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'attachment;filename="{0}"'.format(the_file_name)
+    return response

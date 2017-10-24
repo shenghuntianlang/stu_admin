@@ -25,12 +25,9 @@
  {% load staticfiles %}
 <div class="x-body">
 
-    <a href="/admin_download/{{ table_name }}"><img src="{% static "/images/excel.jpg" %}" width="100" height="100" ></a>
+    <a href="/admin_download/{{ db_name }}"><img src="{% static "/images/db.jpeg" %}" width="100" height="100" ></a>
     <br>
-
-    <label> 表格名: {{ table_name }} 点击下载</label>
-
-
+    <label> {{ db_name }} 点击下载</label>
 </div>
 </body>
 

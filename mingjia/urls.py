@@ -69,6 +69,10 @@ urlpatterns = [
     url(r'^edit_school_handle/$', views.edit_school_handle),
 
     url(r'^admin_school_del/(\d+)$', views.admin_school_del),
-    url(r'^admin_del_schools/$', views.admin_del_schools)
+    url(r'^admin_del_schools/$', views.admin_del_schools),
+    url(r'^admin_backup/$', views.admin_backup)
+
+
+
 
 ]
