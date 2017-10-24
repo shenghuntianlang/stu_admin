@@ -15,7 +15,7 @@ import time
 from user import user_decorator
 
 KEY = 'username'
-
+limit = 50
 
 # Create your views here.
 @user_decorator.login
@@ -28,7 +28,9 @@ def test(request):
 
 @user_decorator.login
 def index(request):
-    return render_to_response('index.html')
+    username = request.COOKIES[KEY]
+    context = {'username': username}
+    return render(request, 'index.html', context)
 
 
 def login(request):
@@ -144,7 +146,7 @@ def admin_add_handle(request):
 
 
 def get_student(page_index, is_new):
-    limit = 60
+    # limit = 60
     if is_new == '1':
         print('查询课程id为1')
         students = Student.objects.filter(is_delete=0).filter(course_id=1)
@@ -156,13 +158,17 @@ def get_student(page_index, is_new):
     # 当前页面的内容
     page = paginator.page(int(page_index))
     for p in page:
+        p.grade = calculate_grade(p.entrance_time)
         p.entrance_time = p.entrance_time.strftime("%Y-%m-%d")
         p.register_date = p.register_date.strftime("%Y-%m-%d")
+        # 计算学员就读的年级并更新数据库中的字段
+        stu = Student.objects.get(id=p.id)
+        stu.temp_class = calculate_grade(stu.entrance_time)
+        stu.save()
 
     return (paginator, page, limit, students)
 
 
-@user_decorator.login
 def admin_student_manager(request, page_index=1, is_new=1):
     """
     学员管理
@@ -211,10 +217,10 @@ def get_search_students_params(request):
             # 用于过滤打印时上传的参数
             if key == 'type' or key == 'is_search' or key == 'is_new' or key == 'index':
                 continue
-            if key != 'course_id':
-                search_params[key + "__contains"] = value
-            else:
+            if key == 'course_id' or key == 'temp_class':
                 search_params[key] = value
+            else:
+                search_params[key + "__contains"] = value
 
     search_params['is_delete'] = 0
     return search_params
@@ -281,7 +287,7 @@ def del_students(request):
         student.is_delete = 1
         student.save()
 
-    resp = Response();
+    resp = Response()
     resp.status = 200
     resp.result = 'success'
 
@@ -404,7 +410,7 @@ def admin_teacher_leave(request, teacher_id):
 
 def get_teacher_page(page_index):
     # 每页显示的条数
-    limit = 50
+    # limit = 50
     # 获取所有的教师信息
     teachers = Teacher.objects.all();
 
@@ -639,7 +645,7 @@ def admin_del_courses(request):
 
 
 def get_courses_page(index):
-    limit = 50
+    # limit = 50
     courses = Course.objects.all().filter(is_delete=0).filter(id__gt=1)
     print(courses.count())
     paginator = Paginator(courses, limit)
@@ -727,7 +733,7 @@ def admin_classroom(request, index):
     """
     print("index-->" + index)
 
-    limit = 50
+    # limit = 50
     classrooms = Classroom.objects.all().filter(is_delete=0)
     print(classrooms.count())
     paginator = Paginator(classrooms, limit)
@@ -896,7 +902,7 @@ def admin_campus(request, index):
     """
     print("index-->" + index)
 
-    limit = 20
+    # limit = 20
     schools = School.objects.all().filter(is_delete=0)
     print(schools.count())
     paginator = Paginator(schools, limit)
@@ -944,7 +950,7 @@ def admin_school(request, index):
     """
     print("index-->" + index)
 
-    limit = 20
+    # limit = 20
     schools = School.objects.all().filter(is_delete=2)
     print(schools.count())
     paginator = Paginator(schools, limit)
@@ -1611,7 +1617,7 @@ def create_student_table(id):
     sheet1.write(startLine + 8, 1, student.entrance_time, style_content)
 
     sheet1.write(startLine + 8, 2, '年级:', style_content)
-    sheet1.write(startLine + 8, 3, '3', style_content)
+    sheet1.write(startLine + 8, 3, student.temp_class, style_content)
 
     sheet1.write(startLine + 10, 0, '班级:', style_content)
 
@@ -1729,3 +1735,39 @@ def admin_download(request, file_name):
     response['Content-Type'] = 'application/octet-stream'
     response['Content-Disposition'] = 'attachment;filename="{0}"'.format(the_file_name)
     return response
+
+
+def calculate_grade(entrance_time):
+    """
+    根据入学时间计算所在年级
+    :param entrance_time:
+    :return:
+    """
+    # 获取当前的日期
+    todaty = datetime.date.today()
+    curr_year = todaty.year
+    curr_month = todaty.month
+    curr_day = todaty.day
+
+    # 获取入学日期
+    year = entrance_time.year
+    month = entrance_time.month
+    day = entrance_time.day
+
+    # 年级
+    grade = curr_year - year
+
+    if month > curr_month:
+        pass
+        # grade -= 1
+    elif month < curr_month:
+        grade += 1
+
+    elif curr_month == month:
+        if day <= curr_day:
+            grade += 1
+        elif day > curr_day:
+            pass
+            # grade -= 1
+
+    return grade

@@ -173,6 +173,7 @@ class Student(models.Model):
     school_name = models.CharField(max_length=104, blank=True, null=True)
     class_name = models.IntegerField(blank=True, null=True)
     grade = models.CharField(max_length=2, blank=True, null=True)
+    temp_class = models.IntegerField(blank=True, null=True)
     course = models.ForeignKey(Course, models.DO_NOTHING, blank=True, null=True)
     register_date = models.DateField(blank=True, null=True)
     remark = models.CharField(max_length=50, blank=True, null=True)

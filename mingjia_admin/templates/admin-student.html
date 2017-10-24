@@ -60,16 +60,21 @@
         {% endif %}
 
 
-        <label class="layui-label">&nbsp;&nbsp;学校:&nbsp;&nbsp; </label>
-        <input type="text" name="school_name" placeholder="学校" value="{{ search_params.school_name__contains }}"
+
+        <label class="layui-label">&nbsp;&nbsp;姓名: &nbsp;&nbsp;</label>
+        <input type="text" name="name" placeholder="姓名" value="{{ search_params.name__contains }}"
                autocomplete="off" class="layui-input">
         <label class="layui-label">&nbsp;&nbsp;手机号码: &nbsp;&nbsp;</label>
         <input type="number" name="phone" placeholder="手机号码" value="{{ search_params.phone__contains }}"
                autocomplete="off" class="layui-input">
-        <label class="layui-label">&nbsp;&nbsp;姓名: &nbsp;&nbsp;</label>
-        <input type="text" name="name" placeholder="姓名" value="{{ search_params.name__contains }}"
+        <label class="layui-label">&nbsp;&nbsp;学校:&nbsp;&nbsp; </label>
+        <input type="text" name="school_name" placeholder="学校" value="{{ search_params.school_name__contains }}"
                autocomplete="off" class="layui-input">
 
+
+        <label class="layui-label">&nbsp;&nbsp;年级:&nbsp;&nbsp; </label>
+        <input type="text" name="temp_class" value="{{ search_params.temp_class }}"
+               autocomplete="off" class="layui-input">
         <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
         <input type="text" name="remark" placeholder="备注" value="{{ search_params.remark__contains }}"
                autocomplete="off" class="layui-input">
@@ -131,7 +136,7 @@
             <td id="course_name">{{ student.course.name }}</td>
             <td id="phone">{{ student.phone }}</td>
             <td id="school_name">{{ student.school_name }}</td>
-            <td id="grade">calculateGrade({{ student.entrance_time }})</td>
+            <td id="grade">{{ student.temp_class }}</td>
             <td id="class_name">{{ student.class_name }}</td>
             <td id="register">{{ student.register_date }}</td>
             <td id="remark">{{ student.remark }}</td>
@@ -168,7 +173,7 @@
 <script>
 
     //计算所在年级
-    function calculateGrade(entrance_date){
+    function calculateGrade(entrance_date) {
 
 
         console.log(entrance_date)
