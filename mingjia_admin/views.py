@@ -56,21 +56,21 @@ def login_handle(request):
     username = login_info['user_name']
     password = login_info['password']
 
-    print("username-> %s password-> %s" % (username, password))
+    # print("username-> %s password-> %s" % (username, password))
     admins = Admin.objects.all().filter(name=username, password=password)
     resp = Response()
     resp.status = 200
 
     response = HttpResponse(content_type='application/json')
     if admins.count() > 0:
-        print
-        "登录成功"
+        # print
+        # "登录成功"
         resp.result = 'success'
         response.set_cookie(KEY, username, max_age=60 * 60)
 
     else:
-        print
-        "登录失败"
+        # print
+        # "登录失败"
         resp.result = 'failed'
         # unicode=  domian =
         response.delete_cookie(KEY)
@@ -79,8 +79,8 @@ def login_handle(request):
     resp_json = json.dumps(resp.__dict__)
     response.content = resp_json
 
-    print
-    resp_json
+    # print
+    # resp_json
 
     return response
 
@@ -136,10 +136,10 @@ def admin_add_handle(request):
         course = Course.objects.get(id=course_id)
         # 这个班次总共可容纳的人数
         places = course.class_field.places
-        print(places)
+        # print(places)
         # 当前人数
         curr_num = Student.objects.all().filter(course_id=course_id).count()
-        print('当前人数-->', curr_num)
+        # print('当前人数-->', curr_num)
         if curr_num >= places:
             resp.remark = "注意！！！当前班次可容纳的总人数为: " + str(places) + "人, 当前的报名人数为: " + str(curr_num) + "人, 请注意是否继续报名!"
 
@@ -149,11 +149,11 @@ def admin_add_handle(request):
 def get_student(page_index, is_new):
     # limit = 60
     if is_new == '1':
-        print('查询课程id为1')
+        # print('查询课程id为1')
         students = Student.objects.filter(is_delete=0).filter(course_id=1)
     else:
         students = Student.objects.filter(is_delete=0)
-        print('查询所有的课程id')
+        # print('查询所有的课程id')
 
     paginator = Paginator(students, limit)
     # 当前页面的内容
@@ -365,7 +365,7 @@ def get_birthday(identity):
 
 @csrf_exempt
 def admin_teacher_add_handle(request):
-    print(request.body)
+    # print(request.body)
     teacher_info = json.loads(request.body)
 
     teacher = Teacher()
@@ -391,7 +391,7 @@ def admin_teacher_add_handle(request):
 
 def admin_teacher_leave(request, teacher_id):
     teacher = Teacher.objects.get(id=teacher_id)
-    print(teacher.name)
+    # print(teacher.name)
 
     resp = Response()
     resp.status = 200
@@ -464,7 +464,7 @@ def admin_teacher_edit(request, teacher_id):
 def admin_teacher_edit_handle(request):
     teacher_info = json.loads(request.body, 'utf-8')
     teacher = Teacher.objects.get(id=teacher_info['teacher_id'])
-    print(teacher.name)
+    # print(teacher.name)
     teacher.name = teacher_info['teacher_name']
     teacher.gender = teacher_info['gender']
     teacher.entry_date = teacher_info['entrance_time']
@@ -505,14 +505,14 @@ def get_teachers(request):
     :return:
     '''
     search_params = get_search_teachers_params(request)
-    print(search_params)
+    # print(search_params)
 
     teachers = Teacher.objects.all().filter(**search_params)
 
     if 'is_delete' in search_params.keys():
         search_params['is_delete'] = int(search_params['is_delete'])
 
-    print(teachers.count())
+    # print(teachers.count())
     context = {'teachers': teachers,
                'total': teachers.count(),
                'edu': get_edu(),
@@ -529,7 +529,7 @@ def get_teachers(request):
         else:
             t.leave_date = ""
 
-    print(search_params)
+    # print(search_params)
 
     return render(request, 'admin-teacher.html', context)
 
@@ -548,7 +548,7 @@ def admin_add_course(request):
 
 @csrf_exempt
 def admin_add_course_handle(request):
-    print(request.body)
+    # print(request.body)
 
     course_info = json.loads(request.body, 'utf-8')
 
@@ -591,7 +591,7 @@ def admin_course_edit(request, course_id):
 
 @csrf_exempt
 def admin_course_edit_handle(request):
-    print(request.body)
+    # print(request.body)
     # {"course_name": "2017春季许岑新希望", "teacher_id": "1", "class_id": "2", "course_time": "17:00 - 18:00",
     #  "remark": "这是一个备注信息"}
     course_info = json.loads(request.body)
@@ -648,7 +648,7 @@ def admin_del_courses(request):
 def get_courses_page(index):
     # limit = 50
     courses = Course.objects.all().filter(is_delete=0).filter(id__gt=1)
-    print(courses.count())
+    # print(courses.count())
     paginator = Paginator(courses, limit)
     page = paginator.page(index)
 
@@ -656,7 +656,7 @@ def get_courses_page(index):
 
 
 def admin_course_manager(request, index=1):
-    print(index)
+    # print(index)
     courses_info = get_courses_page(index)
     classrooms = Classroom.objects.all().filter(is_delete=0)
     teachers = Teacher.objects.all().filter(is_delete=0)
@@ -708,7 +708,7 @@ def admin_get_courses(request):
     :return:
     """
     search_params = get_search_courses_params(request)
-    print(search_params)
+    # print(search_params)
     # 不查询暂无安排的班次
     page = Course.objects.all().filter(**search_params).filter(id__gt=1)
     classrooms = Classroom.objects.all().filter(is_delete=0)
@@ -732,11 +732,11 @@ def admin_classroom(request, index):
     :param request:
     :return:
     """
-    print("index-->" + index)
+    # print("index-->" + index)
 
     # limit = 50
     classrooms = Classroom.objects.all().filter(is_delete=0)
-    print(classrooms.count())
+    # print(classrooms.count())
     paginator = Paginator(classrooms, limit)
     page = paginator.page(index)
     schools = School.objects.all().filter(is_delete=0)
@@ -760,7 +760,7 @@ def admin_add_classroom(request):
     :param request:
     :return:
     """
-    print(request.body)
+    # print(request.body)
     # {"class_name": "banji", "school_id": "1", "places": "40", "remark": "de"}
 
     classroom_info = json.loads(request.body, 'utf-8')
@@ -834,7 +834,7 @@ def get_classroom(request):
 def edit_classroom(request, classroom_id):
     classroom = Classroom.objects.get(id=classroom_id)
     school = School.objects.all().filter(is_delete=0)
-    print(school)
+    # print(school)
     context = {'classroom': classroom,
                'schools': school
                }
@@ -901,11 +901,11 @@ def admin_campus(request, index):
     :param request:
     :return:
     """
-    print("index-->" + index)
+    # print("index-->" + index)
 
     # limit = 20
     schools = School.objects.all().filter(is_delete=0)
-    print(schools.count())
+    # print(schools.count())
     paginator = Paginator(schools, limit)
     page = paginator.page(index)
     context = {'schools': page,
@@ -926,7 +926,7 @@ def admin_add_campus(request):
     :param request:
     :return:
     """
-    print(request.body)
+    # print(request.body)
 
     school_info = json.loads(request.body, 'utf-8')
 
@@ -949,11 +949,11 @@ def admin_school(request, index):
     :param request:
     :return:
     """
-    print("index-->" + index)
+    # print("index-->" + index)
 
     # limit = 20
     schools = School.objects.all().filter(is_delete=2)
-    print(schools.count())
+    # print(schools.count())
     paginator = Paginator(schools, limit)
     page = paginator.page(index)
     context = {'schools': page,
@@ -974,7 +974,7 @@ def admin_add_school(request):
     :param request:
     :return:
     """
-    print(request.body)
+    # print(request.body)
 
     school_info = json.loads(request.body, 'utf-8')
 
@@ -985,7 +985,7 @@ def admin_add_school(request):
         school.remark = school_info['remark']
         school.is_delete = 1
         school.save()
-        print('本校校区添加')
+        # print('本校校区添加')
 
     elif school_info['is_local_school'] == 'false':
 
@@ -995,9 +995,9 @@ def admin_add_school(request):
         school.remark = school_info['remark']
         school.is_delete = 2
         school.save()
-        print('扬州市本地学校添加')
+        # print('扬州市本地学校添加')
 
-    print('状态-》' + str(school.is_delete))
+    # print('状态-》' + str(school.is_delete))
 
     resp = Response()
     resp.status = 200
@@ -1032,7 +1032,7 @@ def edit_school_handle(request):
 
 def admin_school_del(request, school_id):
     school = School.objects.get(id=school_id)
-    print(school.school_name)
+    # print(school.school_name)
     school.is_delete = 1
     school.save()
     resp = Response()
@@ -1054,7 +1054,7 @@ def admin_del_schools(request):
     for school_id in del_list:
         school = School.objects.get(id=school_id)
         school.is_delete = 1
-        print(school.school_name)
+        # print(school.school_name)
         school.save()
 
     resp = Response()
@@ -1132,8 +1132,6 @@ def create_teacher_table(teacher_id):
 
     # 设置单元格的宽度
     for i in xrange(0, 6):
-        print
-        i
         if i % 2 == 0:
             sheet1.col(i).width = 256 * 15
         else:
@@ -1235,8 +1233,6 @@ def create_course_table(id):
 
     # 设置单元格的宽度
     for i in xrange(0, 6):
-        print
-        i
         if i % 2 == 0:
             sheet1.col(i).width = 256 * 15
         else:
@@ -1316,8 +1312,6 @@ def admin_print(request, type, id):
     # type: # 打印的类型
     # is_single: 0->打印单个 1->打印多个
     # id: 要打印的学生/当前页面中显示的内容
-    print(type)
-    print(id)
 
     table_name = None
 
@@ -1438,7 +1432,6 @@ def admin_print_more(request):
 
     # 生成报表前先清空之前已经存在的报表文件
     del_files('mingjia_admin/file')
-    print(request.GET)
     context = {}
 
     # type -> 0 -> 学员
@@ -1449,8 +1442,7 @@ def admin_print_more(request):
 
             # 根据当前显示的页来查询学生信息
             students = get_student(page_index, is_new)[1]
-            for s in students:
-                print(str(s.id) + "-->" + s.name)
+
             table_name = create_students_table(students)
             context = {'table_name': table_name}
         # 根据搜索的结果生成报表
@@ -1458,10 +1450,7 @@ def admin_print_more(request):
             search_params = get_search_students_params(request)
             students = Student.objects.filter(**search_params)
             for s in students:
-                print(s.name)
                 s.register_date = s.register_date.strftime("%Y-%m-%d")
-            print(search_params)
-            print('根据搜索的结果生成报表')
             table_name = create_students_table(students)
             context = {'table_name': table_name}
 
@@ -1469,14 +1458,11 @@ def admin_print_more(request):
     elif int(request.GET['type']) == 1:
         if request.GET['is_search'] == 'False':
             page_index = request.GET['index']
-            print("教师，按照页数打印")
             teachers = get_teacher_page(page_index)[0]
             table_name = create_teachers_table(teachers)
             context = {'table_name': table_name}
         else:
-            print("教师, 按照搜索打印")
             search_params = get_search_teachers_params(request)
-            print(search_params)
             teachers = Teacher.objects.all().filter(**search_params)
             table_name = create_teachers_table(teachers)
             context = {'table_name': table_name}
@@ -1484,21 +1470,15 @@ def admin_print_more(request):
     elif int(request.GET['type']) == 2:
         if request.GET['is_search'] == 'False':
             page_index = int(request.GET['index'])
-            print(page_index)
-            print("班次，按照页数打印:")
             courses = get_courses_page(page_index)[0]
-            for c in courses:
-                print(c.name)
             table_name = create_courses_table(courses)
             context = {'table_name': table_name}
 
         else:
-            print('班次，按照搜索打印')
             search_params = get_search_courses_params(request)
             courses = Course.objects.all().filter(**search_params).filter(id__gt=1)
             table_name = create_courses_table(courses)
-            for c in courses:
-                print(c.name)
+
 
     return render(request, 'admin-print.html', context)
 
@@ -1570,8 +1550,7 @@ def create_student_table(id):
 
     # 设置单元格的宽度
     for i in xrange(0, 6):
-        print
-        i
+
         if i % 2 == 0:
             sheet1.col(i).width = 256 * 15
         else:
@@ -1632,7 +1611,6 @@ def create_student_table(id):
 
     sheet1.write(startLine + 12, 1, student.remark, style_content)
 
-    print(student.course.name)
 
     for i in xrange(0, 5):
         sheet1.write(startLine + 14, i, "", style_border)
@@ -1709,7 +1687,6 @@ def backup_db(username, password, db_name):
 def admin_backup(request):
     del_files('mingjia_admin/file')
     db_name = backup_db('root', 'wangke0310', 'mingjia')
-    print(db_name)
     context = {'db_name': db_name}
     return render(request, 'admin-backup.html', context=context)
 
