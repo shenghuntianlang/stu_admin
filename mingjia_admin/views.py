@@ -15,7 +15,7 @@ import time
 from user import user_decorator
 
 KEY = 'username'
-limit = 30
+limit = 2
 
 
 # Create your views here.
@@ -27,6 +27,8 @@ def test(request):
     return HttpResponse(Course.objects.all().first().name)
 
 
+# ********************** 登录  **********************
+
 @user_decorator.login
 def index(request):
     username = request.COOKIES[KEY]
@@ -35,78 +37,84 @@ def index(request):
 
 
 def login(request):
+    """
+    返回登录对应的html页面
+    :param request:
+    :return:
+    """
     return render_to_response('login.html')
-
-
-def log_out(request):
-    """
-    退出登录
-
-    """
-    response = HttpResponseRedirect(redirect_to='/user/')
-    response.delete_cookie(KEY)
-    return response
 
 
 @csrf_exempt
 def login_handle(request):
+    """
+    处理登录逻辑
+    :param request:
+    :return:
+    """
     # cookie的key
     # 处理用户登录的逻辑
     login_info = json.loads(request.body)
     username = login_info['user_name']
     password = login_info['password']
 
-    # print("username-> %s password-> %s" % (username, password))
     admins = Admin.objects.all().filter(name=username, password=password)
     resp = Response()
     resp.status = 200
 
     response = HttpResponse(content_type='application/json')
     if admins.count() > 0:
-        # print
-        # "登录成功"
         resp.result = 'success'
         response.set_cookie(KEY, username, max_age=60 * 60)
 
     else:
-        # print
-        # "登录失败"
         resp.result = 'failed'
-        # unicode=  domian =
         response.delete_cookie(KEY)
-
     # 当遇到异常的时候返回500等错误代码
     resp_json = json.dumps(resp.__dict__)
     response.content = resp_json
 
-    # print
-    # resp_json
-
     return response
 
 
-def get_courses():
-    '''
-    从数据库中获取班次信息
+def log_out(request):
+    """
+    退出登录
+    :param request:
     :return:
-    '''
-    return Course.objects.filter(is_delete=0).order_by('-id')
+    """
+    response = HttpResponseRedirect(redirect_to='/user/')
+    response.delete_cookie(KEY)
+    return response
 
+
+# ********************** 登录 **********************
+
+
+# ********************** 学员管理 **********************
 
 @user_decorator.login
-def admin_add(request):
+def admin_add_stu(request):
+    """
+    学员添加
+    :param request:
+    :return: 返回班次和小学信息
+    """
     courses = get_courses()
-
     schools = School.objects.all().filter(is_delete=2)
-
     context = {'courses': courses,
                'schools': schools
                }
-    return render(request, 'admin-add.html', context=context)
+    return render(request, 'admin-stu-add.html', context=context)
 
 
 @csrf_exempt
-def admin_add_handle(request):
+def admin_add_stu_handle(request):
+    """
+    学员报名
+    :param request:
+    :return:
+    """
     # 报名学生的相关信息
     student_info = json.loads(request.body)
     student = Student()
@@ -146,14 +154,49 @@ def admin_add_handle(request):
     return HttpResponse(json.dumps(resp.__dict__, encoding='utf-8'), content_type='application/json')
 
 
-def get_student(page_index, is_new):
-    # limit = 60
+@user_decorator.login
+def admin_stu_manager(request):
+    """
+    学员管理
+    111
+    :param request:
+    :param page_index:
+    :param is_new: 1->新生 0-> 普通学员 用于标记是否是新生(班次为暂无安排的被标记为新生)
+    :return:
+    """
+
+    page_index = request.GET['page_index']
+    is_new = request.GET['is_new']
+
+    stu = admin_get_student(page_index, is_new)
+
+    # 页面展示的范围
+    page_range = stu[0].page_range
+
+    context = {'students': stu[1],
+               'courses': get_courses(),
+               'limit': stu[2],
+               'total': stu[3].count(),
+               'page_index': page_index,
+               'page_range': page_range,
+               'max_page': len(page_range),
+               'is_new': int(is_new),
+               'is_search': False}
+
+    return render(request, 'admin-stu.html', context=context)
+
+
+def admin_get_student(page_index, is_new):
+    """
+    根据所在页获取学生信息
+    :param page_index:
+    :param is_new: 是否是新入学的学生
+    :return: 返回一个元组包含与学生相关信息
+    """
     if is_new == '1':
-        # print('查询课程id为1')
         students = Student.objects.filter(is_delete=0).filter(course_id=1)
     else:
         students = Student.objects.filter(is_delete=0)
-        # print('查询所有的课程id')
 
     paginator = Paginator(students, limit)
     # 当前页面的内容
@@ -171,70 +214,16 @@ def get_student(page_index, is_new):
 
 
 @user_decorator.login
-def admin_student_manager(request):
+def admin_search_stu(request):
     """
-    学员管理
-    111
+    根据条件搜索学生
     :param request:
-    :param page_index:
-    :param is_new: 1->新生 0-> 普通学员 用于标记是否是新生(班次为暂无安排的被标记为新生)
+    :param is_new:
     :return:
     """
-
-    page_index = request.GET['page_index']
     is_new = request.GET['is_new']
 
-    # print(is_new)
-
-    stu = get_student(page_index, is_new)
-
-    # 页面展示的范围
-    page_range = stu[0].page_range
-
-    context = {'students': stu[1],
-               'courses': get_courses(),
-               'limit': stu[2],
-               'total': stu[3].count(),
-               'page_index': page_index,
-               'page_range': page_range,
-               'max_page': len(page_range),
-               'is_new': int(is_new),
-               'is_search': False}
-
-    return render(request, 'admin-student.html', context=context)
-
-
-@user_decorator.login
-def get_search_students_params(request):
-    """
-    获取查询学生信息时，传递过来的查询参数
-    :param request:
-    :return: search_params 封装查询参数的字典
-    """
-
-    # type = 0 & is_search = False & is_new = 1 & index = 1 & course_id = & school_name = & phone = & name = & remark =
-
-    search_params = {}
-
-    for key in request.GET.keys():
-        value = request.GET[key]
-        if value.strip():
-            # 用于过滤打印时上传的参数
-            if key == 'type' or key == 'is_search' or key == 'is_new' or key == 'index':
-                continue
-            if key == 'course_id' or key == 'temp_class':
-                search_params[key] = value
-            else:
-                search_params[key + "__contains"] = value
-
-    search_params['is_delete'] = 0
-    return search_params
-
-
-def get_students(request, is_new):
-
-    # 搜索
-    search_params = get_search_students_params(request)
+    search_params = admin_get_search_stus_params(request)
     students = Student.objects.filter(**search_params)
     for s in students:
         s.register_date = s.register_date.strftime("%Y-%m-%d")
@@ -249,13 +238,34 @@ def get_students(request, is_new):
                'is_new': int(is_new),
                'is_search': True}
 
-    return render(request, 'admin-student.html', context)
+    return render(request, 'admin-stu.html', context)
+
+
+def admin_get_search_stus_params(request):
+    """
+    获取查询学生信息时，传递过来的查询参数
+    :param request:
+    :return: search_params 封装查询参数的字典
+    """
+    search_params = {}
+    for key in request.GET.keys():
+        value = request.GET[key]
+        if value.strip():
+            # 用于过滤打印时上传的参数
+            if key == 'type' or key == 'is_search' or key == 'is_new' or key == 'index':
+                continue
+            if key == 'course_id' or key == 'temp_class':
+                search_params[key] = value
+            else:
+                search_params[key + "__contains"] = value
+    search_params['is_delete'] = 0
+    return search_params
 
 
 @user_decorator.login
-def del_student(request):
+def admin_del_stu(request):
     """
-    删除单个
+    删除单个学生
     :param request:
     :param stu_id:
     :return:
@@ -274,9 +284,9 @@ def del_student(request):
 
 
 @csrf_exempt
-def del_students(request):
+def admin_del_stus(request):
     """
-    批量删除
+    批量删除学生
     :param request:
     :return:
     """
@@ -296,21 +306,22 @@ def del_students(request):
     return HttpResponse(resp_json, 'application/json')
 
 
-def admin_student_edit(request, stu_id):
+@user_decorator.login
+def admin_stu_edit(request):
+    stu_id = request.GET['stu_id']
     student = Student.objects.get(id=stu_id)
     student.entrance_time = student.entrance_time.strftime("%Y-%m-%d")
     context = {'student_info': student,
                'courses': get_courses()
                }
-    return render(request, 'admin-edit.html', context)
+    return render(request, 'admin-stu-edit.html', context)
 
 
 @csrf_exempt
-def admin_student_edit_handle(request):
+@user_decorator.login
+def admin_stu_edit_handle(request):
     student_info = json.loads(request.body, 'utf-8')
-
     student = Student.objects.all().get(id=student_info['student_id'])
-
     student.name = student_info['student_name']
     student.gender = student_info['sex']
     student.phone = student_info['phone']
@@ -328,46 +339,49 @@ def admin_student_edit_handle(request):
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
-def admin_student_detail(request, student_id):
+@user_decorator.login
+def admin_stu_detail(request):
     """
-    学生详情
+    查看学生详情
     :param request:
     :param student_id:
     :return:
     """
-    # print(student_id)
-    student = Student.objects.all().get(id=student_id)
-    # 时间格式转化
+    stu_id = request.GET['stu_id']
+    student = Student.objects.all().get(id=stu_id)
     student.entrance_time = student.entrance_time.strftime("%Y-%m-%d")
     student.register_date = student.register_date.strftime("%Y-%m-%d")
     context = {'student_info': student}
-    return render(request, 'admin-student-detail.html', context)
+    return render(request, 'admin-stu-detail.html', context)
 
 
+# ********************** 学员管理 **********************
+
+
+# ********************** 教师管理 **********************
+
+@user_decorator.login
 def admin_teacher_add(request):
+    """
+    携带数据，返回页面
+    :param request:
+    :return:
+    """
     context = {'edu': get_edu(),
                'english_level': get_english_level()
                }
     return render(request, 'admin-teacher-add.html', context)
 
 
-def get_birthday(identity):
-    """
-    从身份证号码中获取出生日期
-    :param identity: 身份证号码
-    :return: date -> 出生日期
-    """
-    year = int(identity[6:10])
-    month = int(identity[10:12])
-    day = int(identity[12:14])
-    return datetime.date(year, month, day)
-
-
 @csrf_exempt
 def admin_teacher_add_handle(request):
-    # print(request.body)
-    teacher_info = json.loads(request.body)
+    """
+    处理增加教师的逻辑
+    :param request:
+    :return:
+    """
 
+    teacher_info = json.loads(request.body)
     teacher = Teacher()
     teacher.name = teacher_info['teacher_name']
     identity = teacher_info['identity']
@@ -389,7 +403,15 @@ def admin_teacher_add_handle(request):
     return HttpResponse(resp_json, content_type='application/json')
 
 
-def admin_teacher_leave(request, teacher_id):
+@user_decorator.login
+def admin_teacher_leave(request):
+    """
+    设置教师离职
+    :param request:
+    :param teacher_id:
+    :return:
+    """
+    teacher_id = request.GET['teacher_id']
     teacher = Teacher.objects.get(id=teacher_id)
     # print(teacher.name)
 
@@ -409,7 +431,7 @@ def admin_teacher_leave(request, teacher_id):
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
-def get_teacher_page(page_index):
+def admin_get_teacher(page_index):
     # 每页显示的条数
     # limit = 50
     # 获取所有的教师信息
@@ -432,8 +454,10 @@ def get_teacher_page(page_index):
     return (curr_page, limit, total)
 
 
-def admin_teacher_manager(request, page_index=1):
-    teachers = get_teacher_page(page_index)
+@user_decorator.login
+def admin_teacher_manager(request):
+    page_index = request.GET['index']
+    teachers = admin_get_teacher(page_index)
 
     context = {'teachers': teachers[0],
                'page_index': page_index,
@@ -447,9 +471,10 @@ def admin_teacher_manager(request, page_index=1):
     return render(request, 'admin-teacher.html', context)
 
 
-def admin_teacher_edit(request, teacher_id):
+@user_decorator.login
+def admin_teacher_edit(request):
+    teacher_id = request.GET['teacher_id']
     teacher_info = Teacher.objects.get(id=teacher_id)
-
     teacher_info.entry_date = teacher_info.entry_date.strftime('%Y-%m-%d')
 
     context = {'teacher_info': teacher_info,
@@ -461,6 +486,7 @@ def admin_teacher_edit(request, teacher_id):
 
 
 @csrf_exempt
+@user_decorator.login
 def admin_teacher_edit_handle(request):
     teacher_info = json.loads(request.body, 'utf-8')
     teacher = Teacher.objects.get(id=teacher_info['teacher_id'])
@@ -473,6 +499,14 @@ def admin_teacher_edit_handle(request):
     teacher.edu = teacher_info['edu']
     teacher.english_level = teacher_info['english_level']
     teacher.remark = teacher_info['remark']
+
+    if 0 == int(teacher_info['status']):
+        teacher.leave_date = None
+        teacher.is_delete = 0
+    elif 1 == int(teacher_info['status']):
+        teacher.leave_date = datetime.date.today()
+        teacher.is_delete = 1
+
 
     teacher.save()
 
@@ -491,21 +525,24 @@ def get_search_teachers_params(request):
             continue
         if value.strip():
             if key == 'id' or key == 'is_delete':
-                if key == 'is_delete' and value != '':
-                    search_params[key] = value
+                search_params[key] = value
+            elif key == 'is_delete' and value != '':
+                search_params[key] = value
             else:
                 search_params[key + "__contains"] = value
+
     return search_params
 
 
-def get_teachers(request):
+@user_decorator.login
+def admin_search_teacher(request):
     '''
     教师信息检索
     :param request:
     :return:
     '''
     search_params = get_search_teachers_params(request)
-    # print(search_params)
+    print(search_params)
 
     teachers = Teacher.objects.all().filter(**search_params)
 
@@ -534,6 +571,11 @@ def get_teachers(request):
     return render(request, 'admin-teacher.html', context)
 
 
+# ********************** 教师管理 **********************
+
+# ********************** 班次管理 **********************
+
+@user_decorator.login
 def admin_add_course(request):
     classrooms = Classroom.objects.all()
     teachers = Teacher.objects.all().filter(leave_date=None)
@@ -547,8 +589,13 @@ def admin_add_course(request):
 
 
 @csrf_exempt
+@user_decorator.login
 def admin_add_course_handle(request):
-    # print(request.body)
+    """
+    添加一个班次信息
+    :param request:
+    :return:
+    """
 
     course_info = json.loads(request.body, 'utf-8')
 
@@ -591,13 +638,13 @@ def admin_course_edit(request, course_id):
 
 @csrf_exempt
 def admin_course_edit_handle(request):
-    # print(request.body
-    # {"course_name": "2017春季许岑新希望", "teacher_id": "1", "class_id": "2", "course_time": "17:00 - 18:00",
-    #  "remark": "这是一个备注信息"}
+    """
+    编辑一个班次信息
+    :param request:
+    :return:
+    """
     course_info = json.loads(request.body)
-
     course = Course.objects.get(id=course_info['course_id'])
-
     course.name = course_info['course_name']
     course.teacher_id = course_info['teacher_id']
     course.class_field_id = course_info['class_id']
@@ -612,7 +659,16 @@ def admin_course_edit_handle(request):
     return HttpResponse(json.dumps(resp.__dict__), content_type="application/json")
 
 
-def admin_course_del(request, course_id):
+@user_decorator.login
+def admin_course_del(request):
+    """
+    删除一个班次
+    :param request:
+    :param course_id:
+    :return:
+    """
+
+    course_id = request.GET['course_id']
     course = Course.objects.get(id=course_id)
     course.is_delete = 1
     course.save()
@@ -623,7 +679,8 @@ def admin_course_del(request, course_id):
 
 
 @csrf_exempt
-def admin_del_courses(request):
+@user_decorator.login
+def admin_courses_del(request):
     """
     批量删除
     :param request:
@@ -646,17 +703,27 @@ def admin_del_courses(request):
 
 
 def get_courses_page(index):
-    # limit = 50
+    """
+    获取下标对应页的班次信息
+    :param index:
+    :return:
+    """
     courses = Course.objects.all().filter(is_delete=0).filter(id__gt=1)
-    # print(courses.count())
     paginator = Paginator(courses, limit)
     page = paginator.page(index)
-
     return (page, limit, courses)
 
 
-def admin_course_manager(request, index=1):
-    # print(index)
+@user_decorator.login
+def admin_course_manager(request):
+    """
+    分页显示班次信息
+    :param request:
+    :param index:
+    :return:
+    """
+
+    index = request.GET['index']
     courses_info = get_courses_page(index)
     classrooms = Classroom.objects.all().filter(is_delete=0)
     teachers = Teacher.objects.all().filter(is_delete=0)
@@ -701,15 +768,14 @@ def get_search_courses_params(request):
     return search_params
 
 
-def admin_get_courses(request):
+@user_decorator.login
+def admin_search_courses(request):
     """
     班次信息检索
     :param request:
     :return:
     """
     search_params = get_search_courses_params(request)
-    # print(search_params)
-    # 不查询暂无安排的班次
     page = Course.objects.all().filter(**search_params).filter(id__gt=1)
     classrooms = Classroom.objects.all().filter(is_delete=0)
     teachers = Teacher.objects.all().filter(is_delete=0)
@@ -726,17 +792,20 @@ def admin_get_courses(request):
     return render(request, 'admin-course.html', context)
 
 
-def admin_classroom(request, index):
+# ********************** 班次管理 **********************
+
+
+# ********************** 校区管理 **********************
+
+@user_decorator.login
+def admin_classroom_manager(request):
     """
     分页浏览班级信息
     :param request:
     :return:
     """
-    # print("index-->" + index)
-
-    # limit = 50
+    index = request.GET['index']
     classrooms = Classroom.objects.all().filter(is_delete=0)
-    # print(classrooms.count())
     paginator = Paginator(classrooms, limit)
     page = paginator.page(index)
     schools = School.objects.all().filter(is_delete=0)
@@ -754,15 +823,13 @@ def admin_classroom(request, index):
 
 
 @csrf_exempt
+@user_decorator.login
 def admin_add_classroom(request):
     """
     添加一个新的教室
     :param request:
     :return:
     """
-    # print(request.body)
-    # {"class_name": "banji", "school_id": "1", "places": "40", "remark": "de"}
-
     classroom_info = json.loads(request.body, 'utf-8')
 
     classroom = Classroom()
@@ -806,7 +873,8 @@ def get_search_classroom_params(request):
     return search_params
 
 
-def get_classroom(request):
+@user_decorator.login
+def admin_search_classroom(request):
     """
     教室的搜索
     :param request:
@@ -814,12 +882,15 @@ def get_classroom(request):
     """
     search_params = get_search_classroom_params(request)
 
+    print(search_params)
+
     classrooms = Classroom.objects.all().filter(**search_params)
 
     schools = School.objects.all().filter(is_delete=0)
 
     # 转型，避免前端页面接收数据进行比较时的类型不匹配
-    search_params['school_id'] = int(search_params['school_id'])
+    if 'school_id' in search_params.keys():
+        search_params['school_id'] = int(search_params['school_id'])
 
     context = {'classrooms': classrooms,
                'total': len(classrooms),
@@ -831,17 +902,27 @@ def get_classroom(request):
     return render(request, "admin-classroom.html", context)
 
 
-def edit_classroom(request, classroom_id):
+@user_decorator.login
+def admin_edit_classroom(request):
+    """
+    编辑教室信息
+    :param request:
+    :param classroom_id:
+    :return:
+    """
+
+    classroom_id = request.GET['classroom_id']
     classroom = Classroom.objects.get(id=classroom_id)
     school = School.objects.all().filter(is_delete=0)
-    # print(school)
     context = {'classroom': classroom,
                'schools': school
                }
     return render(request, 'admin-classroom-edit.html', context)
 
 
-def admin_classroom_del(request, classroom_id):
+@user_decorator.login
+def admin_classroom_del(request):
+    classroom_id = request.GET['classroom_id']
     classroom = Classroom.objects.get(id=classroom_id)
     classroom.is_delete = 1
     classroom.save()
@@ -852,6 +933,7 @@ def admin_classroom_del(request, classroom_id):
 
 
 @csrf_exempt
+@user_decorator.login
 def admin_del_classrooms(request):
     """
     批量删除
@@ -875,7 +957,8 @@ def admin_del_classrooms(request):
 
 
 @csrf_exempt
-def edit_classroom_handle(request):
+@user_decorator.login
+def admin_edit_classroom_handle(request):
     classroom_info = json.loads(request.body)
     # {u'course_id': 1, u'remark': u'None', u'name': u'\u4e00\u53f7\u6559\u5ba4', u'places': u'40', u'school_id': u'1'}
 
@@ -895,17 +978,18 @@ def edit_classroom_handle(request):
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
-def admin_campus(request, index):
+# 分页浏览校区信息
+@user_decorator.login
+def admin_campus_manager(request):
     """
     分页浏览校区信息
     :param request:
     :return:
     """
-    # print("index-->" + index)
 
-    # limit = 20
+    index = request.GET['index']
+
     schools = School.objects.all().filter(is_delete=0)
-    # print(schools.count())
     paginator = Paginator(schools, limit)
     page = paginator.page(index)
     context = {'schools': page,
@@ -919,41 +1003,14 @@ def admin_campus(request, index):
     return render(request, 'admin-campus.html', context)
 
 
-@csrf_exempt
-def admin_add_campus(request):
-    """
-    添加一个校区信息
-    :param request:
-    :return:
-    """
-    # print(request.body)
-
-    school_info = json.loads(request.body, 'utf-8')
-
-    school = School()
-    school.school_name = school_info['school_name']
-    school.school_address = school_info['school_address']
-    school.remark = school_info['remark']
-    school.is_delete = 0
-    school.save()
-
-    resp = Response()
-    resp.status = 200
-    resp.result = 'success'
-    return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
-
-
-def admin_school(request, index):
+def admin_school_manager(request):
     """
     分页浏览本地所有学校信息
     :param request:
     :return:
     """
-    # print("index-->" + index)
-
-    # limit = 20
+    index = request.GET['index']
     schools = School.objects.all().filter(is_delete=2)
-    # print(schools.count())
     paginator = Paginator(schools, limit)
     page = paginator.page(index)
     context = {'schools': page,
@@ -968,14 +1025,12 @@ def admin_school(request, index):
 
 
 @csrf_exempt
-def admin_add_school(request):
+def admin_school_add(request):
     """
     添加一个本地学校的信息
     :param request:
     :return:
     """
-    # print(request.body)
-
     school_info = json.loads(request.body, 'utf-8')
 
     if school_info['is_local_school'] == 'true':
@@ -983,9 +1038,8 @@ def admin_add_school(request):
         school.school_name = school_info['school_name']
         school.school_address = school_info['school_address']
         school.remark = school_info['remark']
-        school.is_delete = 1
+        school.is_delete = 0
         school.save()
-        # print('本校校区添加')
 
     elif school_info['is_local_school'] == 'false':
 
@@ -995,9 +1049,6 @@ def admin_add_school(request):
         school.remark = school_info['remark']
         school.is_delete = 2
         school.save()
-        # print('扬州市本地学校添加')
-
-    # print('状态-》' + str(school.is_delete))
 
     resp = Response()
     resp.status = 200
@@ -1005,15 +1056,15 @@ def admin_add_school(request):
     return HttpResponse(json.dumps(resp.__dict__), content_type='application/json')
 
 
-def edit_school(request, school_id):
+def admin_school_edit(request):
+    school_id = request.GET['school_id']
     school = School.objects.get(id=school_id)
     context = {'school': school}
-
     return render(request, 'admin-school-edit.html', context)
 
 
 @csrf_exempt
-def edit_school_handle(request):
+def admin_school_edit_handle(request):
     school_info = json.loads(request.body)
 
     school = School.objects.get(id=school_info['id'])
@@ -1042,7 +1093,7 @@ def admin_school_del(request, school_id):
 
 
 @csrf_exempt
-def admin_del_schools(request):
+def admin_schools_del(request):
     """
     批量删除
     :param request:
@@ -1054,7 +1105,6 @@ def admin_del_schools(request):
     for school_id in del_list:
         school = School.objects.get(id=school_id)
         school.is_delete = 1
-        # print(school.school_name)
         school.save()
 
     resp = Response()
@@ -1065,41 +1115,10 @@ def admin_del_schools(request):
     return HttpResponse(resp_json, 'application/json')
 
 
-class Response:
-    status = 200
-    result = None
-    remark = ''
-
-    def __init__(self):
-        pass
+# ********************** 校区管理 **********************
 
 
-class DateTimeEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.strftime('%Y-%m-%d %H:%M:%S')
-        elif isinstance(obj, datetime.date):
-            return obj.strftime('%Y-%m-%d')
-        else:
-            return json.JSONEncoder.default(self, obj)
-            # {u'course_id': u'2', u'school_name__contains': u'\u51af', u'is_delete': 0}
-
-
-def get_season():
-    return ['春季', '夏季', '秋季', '冬季']
-
-
-def get_edu():
-    return ['初中', '高中', '大专', '本科', '硕士研究生', '博士研究生']
-
-
-def get_english_level():
-    return ['英语四级', '英语六级', '专业四级', '专业八级']
-
-
-def get_current_time():
-    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
-
+# ********************** 表格生成 **********************
 
 def create_teacher_table(teacher_id):
     teacher = Teacher.objects.get(id=teacher_id)
@@ -1441,13 +1460,13 @@ def admin_print_more(request):
             is_new = request.GET['is_new']
 
             # 根据当前显示的页来查询学生信息
-            students = get_student(page_index, is_new)[1]
+            students = admin_get_student(page_index, is_new)[1]
 
             table_name = create_students_table(students)
             context = {'table_name': table_name}
         # 根据搜索的结果生成报表
         else:
-            search_params = get_search_students_params(request)
+            search_params = admin_get_search_stus_params(request)
             students = Student.objects.filter(**search_params)
             for s in students:
                 s.register_date = s.register_date.strftime("%Y-%m-%d")
@@ -1458,7 +1477,7 @@ def admin_print_more(request):
     elif int(request.GET['type']) == 1:
         if request.GET['is_search'] == 'False':
             page_index = request.GET['index']
-            teachers = get_teacher_page(page_index)[0]
+            teachers = admin_get_teacher(page_index)[0]
             table_name = create_teachers_table(teachers)
             context = {'table_name': table_name}
         else:
@@ -1478,7 +1497,6 @@ def admin_print_more(request):
             search_params = get_search_courses_params(request)
             courses = Course.objects.all().filter(**search_params).filter(id__gt=1)
             table_name = create_courses_table(courses)
-
 
     return render(request, 'admin-print.html', context)
 
@@ -1611,7 +1629,6 @@ def create_student_table(id):
 
     sheet1.write(startLine + 12, 1, student.remark, style_content)
 
-
     for i in xrange(0, 5):
         sheet1.write(startLine + 14, i, "", style_border)
 
@@ -1648,6 +1665,27 @@ def create_student_table(id):
     wbk.save('mingjia_admin/file/' + table_name)
 
     return table_name
+
+
+# ********************** 表格生成 **********************
+
+
+# ********************** 工具类 **********************
+
+def get_season():
+    return ['春季', '暑假', '秋季', '寒假']
+
+
+def get_edu():
+    return ['初中', '高中', '大专', '本科', '硕士研究生', '博士研究生']
+
+
+def get_english_level():
+    return ['英语四级', '英语六级', '专业四级', '专业八级']
+
+
+def get_current_time():
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
 
 
 def del_files(parent):
@@ -1749,3 +1787,44 @@ def calculate_grade(entrance_time):
             # grade -= 1
 
     return grade
+
+
+def get_courses():
+    '''
+    从数据库中获取班次信息
+    :return:
+    '''
+    return Course.objects.filter(is_delete=0).order_by('-id')
+
+
+def get_birthday(identity):
+    """
+    从身份证号码中获取出生日期
+    :param identity: 身份证号码
+    :return: date -> 出生日期
+    """
+    year = int(identity[6:10])
+    month = int(identity[10:12])
+    day = int(identity[12:14])
+    return datetime.date(year, month, day)
+
+
+# ********************** 工具类 **********************
+
+class Response:
+    status = 200
+    result = None
+    remark = ''
+
+    def __init__(self):
+        pass
+
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(obj, datetime.date):
+            return obj.strftime('%Y-%m-%d')
+        else:
+            return json.JSONEncoder.default(self, obj)

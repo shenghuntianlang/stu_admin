@@ -38,7 +38,7 @@
 <div class="layui-row">
 
 
-    <form class="layui-form  x-so" METHOD="get" ACTION="/get_teachers/" accept-charset="UTF-8">
+    <form class="layui-form  x-so" METHOD="get" ACTION="/admin_search_teacher/" accept-charset="UTF-8">
 
 
         <label class="layui-label">&nbsp;&nbsp;员工号:&nbsp;&nbsp; </label>
@@ -111,7 +111,7 @@
         </div>
 
 
-       <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
+        <label class="layui-label">&nbsp;&nbsp;备注: &nbsp;&nbsp;</label>
         <input type="text" name="remark" placeholder="备注" value="{{ search_params.remark__contains }}"
                autocomplete="off" class="layui-input">
 
@@ -124,7 +124,9 @@
 </div>
 
 <xblock>
-    <button class="layui-btn" onclick="x_admin_show('批量打印','/admin_print_more/?type=1&is_search={{ is_search }}&index={{ page_index }}&id={{ search_params.id}}&name={{ search_params.name__contains }}&edu={{ search_params.edu__contains }}&english_level={{ search_params.english_level__contains }}&is_delete={{ search_params.is_delete }}&remark={{ search_params.remark__contains }}')"><i class="layui-icon"></i>打印显示教师信息
+    <button class="layui-btn"
+            onclick="x_admin_show('批量打印','/admin_print_more/?type=1&is_search={{ is_search }}&index={{ page_index }}&id={{ search_params.id }}&name={{ search_params.name__contains }}&edu={{ search_params.edu__contains }}&english_level={{ search_params.english_level__contains }}&is_delete={{ search_params.is_delete }}&remark={{ search_params.remark__contains }}')">
+        打印显示教师信息
 
     </button>
 
@@ -177,7 +179,7 @@
                     <i class="layui-icon">&#xe629;</i>
                 </a>
 
-                <a title="编辑" onclick="x_admin_show('编辑','/admin_teacher_edit/{{ teacher.id }}')" href="javascript:;">
+                <a title="编辑" onclick="x_admin_show('编辑','/admin_teacher_edit/?teacher_id={{ teacher.id }}')" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
 
@@ -236,7 +238,7 @@
                     if (!first) {
 
                         console.log('选中的页->' + obj.curr)
-                        window.location.href = '/admin_teacher_manager/' + obj.curr
+                        window.location.href = '/admin_teacher_manager/?index=' + obj.curr
 
                     }
 
@@ -257,7 +259,7 @@
             $.ajax({
 
                 'type': 'get',
-                'url': '/admin_teacher_leave/' + id,
+                'url': '/admin_teacher_leave/?teacher_id=' + id,
                 'success': function (data) {
 
                     if (data.result == 'success') {

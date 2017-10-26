@@ -72,7 +72,7 @@
     </form>
 
 
-    <form class="layui-form  x-so" METHOD="get" ACTION="/get_classroom/" accept-charset="UTF-8">
+    <form class="layui-form  x-so" METHOD="get" ACTION="/admin_search_classroom/" accept-charset="UTF-8">
 
 
         <label class="layui-label">&nbsp;&nbsp;班级名:&nbsp;&nbsp; </label>
@@ -82,6 +82,9 @@
         <label class="layui-label">班级所在校区:&nbsp;&nbsp;</label>
         <div class="layui-input-inline">
             <select name="school_id" lay-verify="required">
+
+                 <option selected value=""></option>
+
                 {% for school in schools %}
 
                     {% if school.id == search_params.school_id %}
@@ -150,7 +153,7 @@
             <td id="school">{{ classroom.school.school_name }}</td>
             <td id="remark">{{ classroom.remark }}</td>
             <td class="td-manage">
-                <a title="编辑" onclick="x_admin_show('编辑','/edit_classroom/{{ classroom.id }}')" href="javascript:;">
+                <a title="编辑" onclick="x_admin_show('编辑','/admin_edit_classroom/?classroom_id={{ classroom.id }}')" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
                 <a title="删除" onclick="member_del(this,{{ classroom.id }})" href="javascript:;">
@@ -199,7 +202,7 @@
 
                 if (!first) {
 
-                    window.location.href = '/admin_classroom/' + obj.curr;
+                    window.location.href = '/admin_classroom_manager/?index=' + obj.curr;
 
                 }
 
@@ -222,7 +225,7 @@
             $.ajax({
 
                 'type': 'get',
-                'url': '/admin_classroom_del/' + id,
+                'url': '/admin_classroom_del/?classroom_id=' + id,
                 'success': function (data) {
 
                     if (data.result == 'success') {
@@ -287,7 +290,7 @@
     /* 刷新当前页*/
     function refresh() {
 
-        location.replace('/admin_classroom/1')
+        location.replace('/admin_classroom_manager/?index={{ index }}')
 
     }
 
@@ -297,12 +300,7 @@
         var form = layui.form
             , layer = layui.layer;
 
-        //监听提交
         form.on('submit(add)', function (data) {
-            console.log('打印开始')
-            console.log(data);
-            console.log('打印结束')
-            //发异步，把数据提交给php
             var json_student_info = JSON.stringify(data.field);
 
             $.ajax({

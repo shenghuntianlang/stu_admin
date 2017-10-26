@@ -27,90 +27,113 @@
     <form class="layui-form">
 
         <div class="layui-form-item">
-            <label for="course_year" class="layui-form-label">
-                <span class="x-red">*</span>班次所在年份
+            <label for="student_name" class="layui-form-label">
+                <span class="x-red">*</span>学员姓名
             </label>
             <div class="layui-input-inline">
-                <input type="text" id="course_year" name="course_year" required="" lay-verify="year|required"
+                <input type="text" id="student_name" name="student_name" required="" lay-verify="required"
                        autocomplete="off" class="layui-input">
             </div>
         </div>
 
         <div class="layui-form-item">
 
-            <label for="course_season" class="layui-form-label">
-                <span class="x-red">*</span>班次所在季节
+            <label for="sex" class="layui-form-label">
+                <span class="x-red">*</span>学生性别
             </label>
-            <div class="layui-inline">
-                <select id="course_season" name="course_season" lay-verify="required">
 
-                    {% for s in season %}
+            <div id="sex" class="layui-input-inline">
 
-                         <option value="{{ s }}">{{ s }}</option>
+                <input type="radio" name="sex" value="男" title="男" checked>
+                <input type="radio" name="sex" value="女" title="女">
 
-                    {% endfor %}
-
-
-
-                </select>
             </div>
+
+
         </div>
 
 
         <div class="layui-form-item">
 
-            <label for="course_name" class="layui-form-label">
-                <span class="x-red">*</span>班次名称
+            <label for="entrance_time" class="layui-form-label">
+                <span class="x-red">*</span>入学时间
             </label>
 
             <div class="layui-input-inline"> <!-- 注意：这一层元素并不是必须的 -->
-                <input type="text" class="layui-input" id="course_name" name="course_name"
-                       lay-verify="required">
+                <input type="text" class="layui-input" id="entrance_time" name="entrance_time" lay-verify="date"
+                       required="">
             </div>
 
+            <div class="layui-form-mid layui-word-aux">
+                <span class="x-red">*</span>请填写入学时间
+            </div>
 
         </div>
-
 
         <div class="layui-form-item">
-            <label for="teacher_id" class="layui-form-label">
-                <span class="x-red">*</span>任课教师
+            <label for="school_name" class="layui-form-label">
+                <span class="x-red">*</span>所在小学
             </label>
-            <div class="layui-inline">
-                <select id="teacher_id" name="teacher_id" lay-search lay-verify="required">
 
-                    <option value=''></option>
-                    {% for teacher in teachers %}
+            <div class="layui-input-inline">
 
-                        <option value={{ teacher.id }}>{{ teacher.name }}</option>
+
+                <select name="school_name" lay-search lay-verify="required">
+
+                    <option value=""></option>
+
+                    {% for school in schools %}
+
+                        <option value={{ school.id }}> {{ school.school_name }}</option>
 
                     {% endfor %}
-
                 </select>
+
             </div>
+
+
         </div>
+
 
         <div class="layui-form-item">
             <label for="class_id" class="layui-form-label">
-                <span class="x-red">*</span>班次地点(所在教室)
+                <span class="x-red">*</span>班级
             </label>
-            <div class="layui-inline">
-                <select id="class_id" name="class_id" lay-verify="required">
-                    {% for classroom in classrooms %}
-                        <option value={{ classroom.id }}>{{ classroom.name }}-{{ classroom.school.school_name }}</option>
-                    {% endfor %}
-                </select>
+            <div class="layui-input-inline">
+                <input type="text" id="class_id" name="class_id" required=""
+                       lay-verify="number" autocomplete="off" class="layui-input">
             </div>
         </div>
 
-
         <div class="layui-form-item">
-            <label for="course_time" class="layui-form-label">
-                <span class="x-red">*</span>班次上课时间
+            <label for="phone" class="layui-form-label">
+                <span class="x-red">*</span>联系方式
             </label>
             <div class="layui-input-inline">
-                <input type="text" id="course_time" name="course_time" lay-verify="required"
+                <input type="text" id="phone" name="phone" required="" lay-verify="phone"
                        autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">所在班次</label>
+            <div class="layui-input-inline">
+                <select name="course_id" lay-search lay-verify="required">
+
+                    <option value=""></option>
+
+                    {% for course in courses %}
+
+                        <option {% if course.id == 0 %}
+
+                            selected
+
+                        {% endif %}
+
+                            value={{ course.id }}> {{ course.name }}</option>
+
+                    {% endfor %}
+                </select>
             </div>
         </div>
 
@@ -129,7 +152,7 @@
             <label for="L_repass" class="layui-form-label">
             </label>
             <button class="layui-btn" lay-filter="add" lay-submit="">
-                添加
+                增加
             </button>
         </div>
 
@@ -146,25 +169,40 @@
             console.log('打印开始')
             console.log(data);
             console.log('打印结束')
-
+            //发异步，把数据提交给php
             var json_student_info = JSON.stringify(data.field);
+
             $.ajax({
                 type: 'post',
-                url: '/admin_course_add_handle/',
+                url: '/admin_add_stu_handle/',
                 contentType: 'application/json;charset=utf-8',
                 data: json_student_info,
                 success: function (data) {
 
                     if (data.result == 'success') {
 
-                        layer.alert("增加成功", {icon: 6}, function (index) {
+                        if (typeof (data.remark) == 'undefined') {
+                            layer.alert("增加成功 \n", function (index) {
 
-                            layer.close(index)
+                                layer.close(index)
 
-                        });
+
+                            });
+
+                        } else {
+
+                            layer.alert("增加成功 \n" + data.remark, {icon: 6}, function (index) {
+
+                                layer.close(index)
+
+
+                            });
+                        }
+
 
                     } else {
-                        layer.alert("增加失败", {icon: 6}, function (index) {
+
+                        layer.alert("增加失败", {icon: 5}, function (index) {
 
                             layer.close(index)
 
@@ -186,8 +224,7 @@
     layui.use('laydate', function () {
         var laydate = layui.laydate;
         laydate.render({
-            elem: '#course_year', //指定元素
-            type: 'year'
+            elem: '#entrance_time' //指定元素
         });
     });
 

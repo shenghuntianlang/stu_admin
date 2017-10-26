@@ -164,65 +164,7 @@
     </div>
 
 </div>
-<script>
-    layui.use(['form', 'layer'], function () {
-        $ = layui.jquery;
-        var form = layui.form
-            , layer = layui.layer;
 
-        //监听提交
-        form.on('submit(add)', function (data) {
-            console.log('打印开始')
-            console.log(data);
-            console.log('打印结束')
-            //发异步，把数据提交给php
-            var json_student_info = JSON.stringify(data.field);
-
-            $.ajax({
-                type: 'post',
-                url: '/admin_add_handle/',
-                contentType: 'application/json;charset=utf-8',
-                data: json_student_info,
-                success: function (data) {
-
-                    if (data.result == 'success') {
-
-                        layer.alert("增加成功", {icon: 6}, function (index) {
-
-                            layer.close(index)
-
-
-                        });
-
-                    } else {
-
-                        layer.alert("增加失败", {icon: 5}, function (index) {
-
-                            layer.close(index)
-
-                        });
-
-                    }
-
-                }
-
-            })
-
-            return false;
-        });
-
-
-    });
-
-
-    layui.use('laydate', function () {
-        var laydate = layui.laydate;
-        laydate.render({
-            elem: '#entrance_time' //指定元素
-        });
-    });
-
-</script>
 
 </body>
 

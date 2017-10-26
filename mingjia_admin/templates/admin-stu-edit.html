@@ -27,42 +27,36 @@
     <form class="layui-form">
 
         <div class="layui-form-item">
-            <label for="teacher_name" class="layui-form-label">
-                <span class="x-red">*</span>教师姓名
+            <label for="student_name" class="layui-form-label">
+                <span class="x-red">*</span>学员姓名
             </label>
             <div class="layui-input-inline">
-                <input type="text" id="teacher_name" name="teacher_name" required="" lay-verify="required"
-                       value="{{ teacher_info.name }}"
-                       autocomplete="off" class="layui-input">
+                <input type="text" id="student_name" name="student_name" required="" lay-verify="required"
+                       autocomplete="off" value="{{ student_info.name }}" class="layui-input">
             </div>
         </div>
 
         <div class="layui-form-item">
 
-            <label for="gender" class="layui-form-label">
-                <span class="x-red">*</span>性别
+            <label for="sex" class="layui-form-label">
+                <span class="x-red">*</span>学生性别
             </label>
 
-            <div id="gender" class="layui-input-inline">
+            <div id="sex" class="layui-input-inline">
 
 
-                <input type="radio" name="gender" value="男" title="男"
+                <input type="radio" name="sex" value="男" title="男" {% if student_info.gender == '男' %}
 
-                        {% if teacher_info.gender == '男' %}
                        checked
-                        {% endif %}
 
-                >
+                {% endif %}>
 
 
-                <input type="radio" name="gender" value="女" title="女"
+                <input type="radio" name="sex" value="女" title="女"  {% if student_info.gender == '女' %}
 
-                        {% if teacher_info.gender == '女' %}
                        checked
-                        {% endif %}
 
-                >
-
+                {% endif %}>
 
             </div>
 
@@ -73,39 +67,44 @@
         <div class="layui-form-item">
 
             <label for="entrance_time" class="layui-form-label">
-                <span class="x-red">*</span>入职时间
+                <span class="x-red">*</span>入学时间
             </label>
 
             <div class="layui-input-inline"> <!-- 注意：这一层元素并不是必须的 -->
                 <input type="text" class="layui-input" id="entrance_time" name="entrance_time" lay-verify="date"
-                       value="{{ teacher_info.entry_date }}"
+                       value="{{ student_info.entrance_time }}"
                        required="">
             </div>
 
-
-        </div>
-
-        <div class="layui-form-item">
-            <label class="layui-form-label">在职状态</label>
-            <div class="layui-input-inline">
-                <select name="status" lay-verify="required">
-
-                    <option value=0 {% if teacher_info.is_delete == 0 %}selected{% endif %}> 在职</option>
-                    <option value=1 {% if teacher_info.is_delete == 1 %}selected{% endif %}> 离职</option>
-
-                </select>
+            <div class="layui-form-mid layui-word-aux">
+                <span class="x-red">*</span>请填写入学时间
             </div>
+
+        </div>
+
+        <div class="layui-form-item">
+            <label for="school_name" class="layui-form-label">
+                <span class="x-red">*</span>所在小学
+            </label>
+            <div class="layui-input-inline">
+                <input type="text" id="school_name" name="school_name" required="" lay-verify="required"
+                       autocomplete="off" value="{{ student_info.school_name }}" class="layui-input">
+            </div>
+
+            <div class="layui-form-mid layui-word-aux">
+                <span class="x-red">*</span>请填写小学就读的学校，相同小学请保持唯一名称
+            </div>
+
         </div>
 
 
         <div class="layui-form-item">
-            <label for="identity" class="layui-form-label">
-                <span class="x-red">*</span>身份证号码
+            <label for="class_id" class="layui-form-label">
+                <span class="x-red">*</span>班级
             </label>
-
             <div class="layui-input-inline">
-                <input type="number" id="identity" name="identity" lay-verify="identity"
-                       autocomplete="off" class="layui-input" value="{{ teacher_info.id_number }}">
+                <input type="text" id="class_id" name="class_id" required=""
+                       lay-verify="number" value="{{ student_info.class_name }}" autocomplete="off" class="layui-input">
             </div>
         </div>
 
@@ -114,37 +113,27 @@
                 <span class="x-red">*</span>联系方式
             </label>
             <div class="layui-input-inline">
-                <input type="text" id="phone" name="phone" lay-verify="phone" value="{{ teacher_info.phone }}"
-                       autocomplete="off" class="layui-input">
+                <input type="text" id="phone" name="phone" required="" lay-verify="phone"
+                       value="{{ student_info.phone }}" autocomplete="off" class="layui-input">
             </div>
         </div>
 
         <div class="layui-form-item">
-            <label class="layui-form-label">教育背景</label>
+            <label class="layui-form-label">所在班次</label>
             <div class="layui-input-inline">
-                <select name="edu" lay-verify="required">
-
-                    {% for e in edu %}
+                <select name="course_id" lay-verify="required">
 
 
+                    {% for course in courses %}
 
-                        <option value="{{ e }}" {% if teacher_info.edu == e %}
-                                selected
-                        {% endif %}> {{ e }} </option>
+                        <option {% if course.id == student_info.course_id %}
 
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
+                            selected
 
-        <div class="layui-form-item">
-            <label for="english_level" class="layui-form-label">英语水平</label>
-            <div class="layui-input-inline">
-                <select name="english_level" lay-verify="required">
-                    {% for e in english_level %}
-                        <option value="{{ e }}" {% if teacher_info.english_level == e %}
-                                selected
-                        {% endif %}> {{ e }} </option>
+                        {% endif %}
+
+                            value={{ course.id }}> {{ course.name }}</option>
+
                     {% endfor %}
                 </select>
             </div>
@@ -157,11 +146,10 @@
                 <label for="remark" class="layui-form-label">备注</label>
                 <div class="layui-input-block">
                     <textarea id="remark" name="remark" placeholder="请输入内容"
-                              class="layui-textarea">{{ teacher_info.remark }}</textarea>
+                              class="layui-textarea">{{ student_info.remark }}</textarea>
                 </div>
             </div>
         </div>
-
 
         <div class="layui-form-item">
             <label for="L_repass" class="layui-form-label">
@@ -174,14 +162,6 @@
     </form>
 </div>
 <script>
-
-    layui.use('laydate', function () {
-        var laydate = layui.laydate;
-        laydate.render({
-            elem: '#entrance_time' //指定元素
-        });
-    });
-
     layui.use(['form', 'layer'], function () {
         $ = layui.jquery;
         var form = layui.form
@@ -193,17 +173,16 @@
             console.log(data);
             console.log('打印结束')
 
-            data.field.teacher_id =
-            {{ teacher_info.id }}
-
-            var json_teacher_info = JSON.stringify(data.field);
+            data.field.student_id =
+            {{ student_info.id }}
+            var json_student_info = JSON.stringify(data.field);
 
 
             $.ajax({
                 type: 'post',
-                url: '/admin_teacher_edit_handle/',
+                url: '/admin_stu_edit_handle/',
                 contentType: 'application/json;charset=utf-8',
-                data: json_teacher_info,
+                data: json_student_info,
                 success: function (data) {
 
                     console.log(data)
@@ -217,8 +196,8 @@
                             layer.close(index)
 
                         });
-                    } else {
-                        layer.alert("修改失败", {icon: 2}, function (index) {
+                    }else {
+                         layer.alert("修改失败", {icon: 2}, function (index) {
 
                             layer.close(index)
 
@@ -237,6 +216,13 @@
 
     });
 
+
+    layui.use('laydate', function () {
+        var laydate = layui.laydate;
+        laydate.render({
+            elem: '#entrance_time' //指定元素
+        });
+    });
 
 </script>
 

@@ -26,13 +26,13 @@ Traceback (most recent call last):
     response = wrapped_callback(request, *callback_args, **callback_kwargs)
   File "/root/workspace/http/mingjia/mingjia_admin/user/user_decorator.py", line 15, in login_fun
     return func(request)
-  File "/root/workspace/http/mingjia/mingjia_admin/views.py", line 189, in admin_student_manager
-    stu = get_student(page_index, is_new)
-  File "/root/workspace/http/mingjia/mingjia_admin/views.py", line 152, in get_student
+  File "/root/workspace/http/mingjia/mingjia_admin/views.py", line 189, in admin_stu_manager
+    stu = admin_get_student(page_index, is_new)
+  File "/root/workspace/http/mingjia/mingjia_admin/views.py", line 152, in admin_get_student
     print('查询课程id为1')
 UnicodeEncodeError: 'ascii' codec can't encode characters in position 0-3: ordinal not in range(128)
 [25/Oct/2017 10:43:03] "GET /admin_student/?page_index=1&is_new=1 HTTP/1.1" 500 72576
-[25/Oct/2017 10:43:04] "GET /admin_add/ HTTP/1.1" 200 7357
+[25/Oct/2017 10:43:04] "GET /admin_add_stu/ HTTP/1.1" 200 7357
 [25/Oct/2017 10:43:05] "GET /static/lib/layui/lay/modules/laydate.js HTTP/1.1" 200 26806
 [25/Oct/2017 10:43:05] "GET /static/lib/layui/css/modules/laydate/default/laydate.css?v=5.0.2 HTTP/1.1" 200 7523
 Internal Server Error: /admin_student/
@@ -45,9 +45,9 @@ Traceback (most recent call last):
     response = wrapped_callback(request, *callback_args, **callback_kwargs)
   File "/root/workspace/http/mingjia/mingjia_admin/user/user_decorator.py", line 15, in login_fun
     return func(request)
-  File "/root/workspace/http/mingjia/mingjia_admin/views.py", line 189, in admin_student_manager
-    stu = get_student(page_index, is_new)
-  File "/root/workspace/http/mingjia/mingjia_admin/views.py", line 156, in get_student
+  File "/root/workspace/http/mingjia/mingjia_admin/views.py", line 189, in admin_stu_manager
+    stu = admin_get_student(page_index, is_new)
+  File "/root/workspace/http/mingjia/mingjia_admin/views.py", line 156, in admin_get_student
     print('查询所有的课程id')
 UnicodeEncodeError: 'ascii' codec can't encode characters in position 0-6: ordinal not in range(128)
 [25/Oct/2017 10:43:05] "GET /admin_student/?page_index=1&is_new=0 HTTP/1.1" 500 73520
@@ -85,39 +85,39 @@ username-> admin password-> admin
 [25/Oct/2017 10:50:32] "GET /static/lib/layui/lay/modules/laypage.js HTTP/1.1" 200 4395
 [25/Oct/2017 10:50:33] "GET /static/lib/layui/css/modules/laydate/default/laydate.css?v=5.0.2 HTTP/1.1" 304 0
 [25/Oct/2017 10:50:35] "GET /admin_student/?page_index=1&is_new=0 HTTP/1.1" 200 45206
-[25/Oct/2017 10:50:39] "GET /admin_add/ HTTP/1.1" 200 7357
-[25/Oct/2017 10:50:45] "GET /get_students/1?name=%E6%9C%B1%E6%B4%AA%E4%BC%9F&phone=&school_name=&temp_class=&remark= HTTP/1.1" 200 11036
-[25/Oct/2017 10:50:48] "GET /get_students/1?name=%E6%9C%B1%E6%B4%AA%E4%BC%9F1&phone=&school_name=&temp_class=&remark= HTTP/1.1" 200 7981
-[25/Oct/2017 10:50:52] "GET /get_students/1?name=%E6%9C%B1%E6%B4%AA%E4%BC%9F1&phone=&school_name=&temp_class=1&remark= HTTP/1.1" 200 7982
-[25/Oct/2017 10:50:59] "GET /get_students/1?name=%E6%9C%B1%E6%B4%AA%E4%BC%9F1&phone=17714574929&school_name=&temp_class=1&remark= HTTP/1.1" 200 6463
+[25/Oct/2017 10:50:39] "GET /admin_add_stu/ HTTP/1.1" 200 7357
+[25/Oct/2017 10:50:45] "GET /admin_search_stu/1?name=%E6%9C%B1%E6%B4%AA%E4%BC%9F&phone=&school_name=&temp_class=&remark= HTTP/1.1" 200 11036
+[25/Oct/2017 10:50:48] "GET /admin_search_stu/1?name=%E6%9C%B1%E6%B4%AA%E4%BC%9F1&phone=&school_name=&temp_class=&remark= HTTP/1.1" 200 7981
+[25/Oct/2017 10:50:52] "GET /admin_search_stu/1?name=%E6%9C%B1%E6%B4%AA%E4%BC%9F1&phone=&school_name=&temp_class=1&remark= HTTP/1.1" 200 7982
+[25/Oct/2017 10:50:59] "GET /admin_search_stu/1?name=%E6%9C%B1%E6%B4%AA%E4%BC%9F1&phone=17714574929&school_name=&temp_class=1&remark= HTTP/1.1" 200 6463
 [25/Oct/2017 10:51:05] "GET /admin_student/?page_index=1&is_new=0 HTTP/1.1" 200 45206
-[25/Oct/2017 10:51:19] "GET /admin_add/ HTTP/1.1" 200 7357
-[25/Oct/2017 10:51:37] "POST /admin_add_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:19] "GET /admin_add_stu/ HTTP/1.1" 200 7357
+[25/Oct/2017 10:51:37] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
 [25/Oct/2017 10:51:38] "GET /static/lib/layui/css/modules/layer/default/icon.png HTTP/1.1" 200 11493
-[25/Oct/2017 10:51:41] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:51:44] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:51:46] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:51:48] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:51:49] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:51:51] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:51:53] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:51:55] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:51:56] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:51:58] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:00] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:01] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:02] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:02] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:02] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:06] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:08] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:10] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:11] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:13] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:15] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:18] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:20] "POST /admin_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 10:52:22] "POST /admin_add_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:41] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:44] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:46] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:48] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:49] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:51] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:53] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:55] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:56] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:51:58] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:00] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:01] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:02] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:02] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:02] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:06] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:08] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:10] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:11] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:13] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:15] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:18] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:20] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
+[25/Oct/2017 10:52:22] "POST /admin_add_stu_handle/ HTTP/1.1" 200 36
 mysqldump: [Warning] Using a password on the command line interface can be insecure.
 [25/Oct/2017 10:52:25] "GET /admin_backup/ HTTP/1.1" 200 1302
 Not Found: /admin_backup/css/xadmin.css
@@ -180,12 +180,12 @@ Not Found: /admin_backup/js/xadmin.js
 [25/Oct/2017 11:00:19] "GET /index/ HTTP/1.1" 200 6770
 [25/Oct/2017 11:00:19] "GET /static/fonts/iconfont.woff HTTP/1.1" 200 30200
 [25/Oct/2017 11:00:20] "GET /static/lib/layui/font/iconfont.woff?v=2.0.0 HTTP/1.1" 200 21680
-[25/Oct/2017 11:00:27] "GET /admin_add/ HTTP/1.1" 200 7357
+[25/Oct/2017 11:00:27] "GET /admin_add_stu/ HTTP/1.1" 200 7357
 [25/Oct/2017 11:00:27] "GET /static/lib/layui/lay/modules/laydate.js HTTP/1.1" 200 26806
 [25/Oct/2017 11:00:28] "GET /static/lib/layui/css/modules/laydate/default/laydate.css?v=5.0.2 HTTP/1.1" 200 7523
 [25/Oct/2017 11:00:35] "GET /static/lib/layui/css/modules/layer/default/loading-1.gif HTTP/1.1" 200 701
 [25/Oct/2017 11:00:35] "GET /static/lib/layui/css/modules/layer/default/icon.png HTTP/1.1" 200 11493
-[25/Oct/2017 11:00:35] "GET /admin_student_edit/15 HTTP/1.1" 200 7438
+[25/Oct/2017 11:00:35] "GET /admin_stu_edit/15 HTTP/1.1" 200 7438
 [25/Oct/2017 11:00:36] "GET /static/css/xadmin.css HTTP/1.1" 304 0
 [25/Oct/2017 11:00:36] "GET /static/css/font.css HTTP/1.1" 304 0
 [25/Oct/2017 11:00:36] "GET /static/lib/layui/layui.js HTTP/1.1" 304 0
@@ -260,7 +260,7 @@ Not Found: /favicon.ico
 [25/Oct/2017 12:13:23] "GET /index/ HTTP/1.1" 200 6770
 [25/Oct/2017 12:13:23] "GET /static/fonts/iconfont.woff HTTP/1.1" 200 30200
 [25/Oct/2017 12:13:23] "GET /static/lib/layui/font/iconfont.woff?v=2.0.0 HTTP/1.1" 200 21680
-[25/Oct/2017 12:13:26] "GET /admin_add/ HTTP/1.1" 200 7357
+[25/Oct/2017 12:13:26] "GET /admin_add_stu/ HTTP/1.1" 200 7357
 [25/Oct/2017 12:13:26] "GET /static/lib/layui/lay/modules/laydate.js HTTP/1.1" 200 26806
 [25/Oct/2017 12:13:27] "GET /static/lib/layui/css/modules/laydate/default/laydate.css?v=5.0.2 HTTP/1.1" 200 7523
 [25/Oct/2017 12:13:27] "GET /admin_student/?page_index=1&is_new=1 HTTP/1.1" 200 51401
@@ -295,7 +295,7 @@ Not Found: /favicon.ico
 [25/Oct/2017 12:14:53] "GET /index/ HTTP/1.1" 200 6770
 [25/Oct/2017 12:14:53] "GET /static/images/favicon.png HTTP/1.1" 200 1024
 [25/Oct/2017 12:14:55] "GET /admin_student/?page_index=1&is_new=1 HTTP/1.1" 200 51401
-[25/Oct/2017 12:14:55] "GET /admin_add/ HTTP/1.1" 200 7357
+[25/Oct/2017 12:14:55] "GET /admin_add_stu/ HTTP/1.1" 200 7357
 [25/Oct/2017 12:14:56] "GET /admin_student/?page_index=1&is_new=0 HTTP/1.1" 200 52689
 [25/Oct/2017 12:15:39] "GET /index HTTP/1.1" 302 0
 [25/Oct/2017 12:15:40] "GET /user/ HTTP/1.1" 200 2854
@@ -516,7 +516,7 @@ Not Found: /favicon.ico
 [25/Oct/2017 12:25:37] "GET /static/lib/layui/css/modules/laydate/default/laydate.css?v=5.0.2 HTTP/1.1" 200 7523
 [25/Oct/2017 12:25:42] "GET /static/lib/layui/css/modules/layer/default/loading-1.gif HTTP/1.1" 200 701
 [25/Oct/2017 12:25:42] "GET /static/lib/layui/css/modules/layer/default/icon.png HTTP/1.1" 200 11493
-[25/Oct/2017 12:25:42] "GET /admin_student_detail/7 HTTP/1.1" 200 5286
+[25/Oct/2017 12:25:42] "GET /admin_stu_detail/7 HTTP/1.1" 200 5286
 [25/Oct/2017 12:25:43] "GET /index/ HTTP/1.1" 302 0
 [25/Oct/2017 12:25:44] "GET /user/ HTTP/1.1" 200 2854
 [25/Oct/2017 12:25:44] "GET /static/css/font.css HTTP/1.1" 200 521
@@ -543,8 +543,8 @@ Not Found: /favicon.ico
 [25/Oct/2017 12:25:49] "GET /static/lib/layui/lay/modules/laypage.js HTTP/1.1" 200 4395
 [25/Oct/2017 12:25:49] "GET /static/lib/layui/css/modules/laydate/default/laydate.css?v=5.0.2 HTTP/1.1" 200 7523
 [25/Oct/2017 12:25:50] "GET /admin_student/?page_index=1&is_new=0 HTTP/1.1" 200 52689
-[25/Oct/2017 12:25:52] "GET /admin_student_detail/7 HTTP/1.1" 200 5286
-[25/Oct/2017 12:25:53] "GET /admin_student_detail/7 HTTP/1.1" 200 5286
+[25/Oct/2017 12:25:52] "GET /admin_stu_detail/7 HTTP/1.1" 200 5286
+[25/Oct/2017 12:25:53] "GET /admin_stu_detail/7 HTTP/1.1" 200 5286
 [25/Oct/2017 12:25:53] "GET /admin_course_manager/1 HTTP/1.1" 200 14116
 [25/Oct/2017 12:25:54] "GET /admin_teacher_manager/1 HTTP/1.1" 200 20381
 [25/Oct/2017 12:25:55] "GET /admin_teacher_add/ HTTP/1.1" 200 6910
@@ -553,13 +553,13 @@ Not Found: /favicon.ico
 [25/Oct/2017 12:25:57] "GET /static/js/xadmin.js HTTP/1.1" 200 5459
 /root/workspace/http/mingjia/mingjia_admin/views.py:909: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'mingjia_admin.models.School'> QuerySet.
   paginator = Paginator(schools, limit)
-[25/Oct/2017 12:25:57] "GET /admin_campus/1 HTTP/1.1" 200 11020
+[25/Oct/2017 12:25:57] "GET /admin_campus_manager/1 HTTP/1.1" 200 11020
 /root/workspace/http/mingjia/mingjia_admin/views.py:957: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'mingjia_admin.models.School'> QuerySet.
   paginator = Paginator(schools, limit)
-[25/Oct/2017 12:25:58] "GET /admin_school/1 HTTP/1.1" 200 7796
+[25/Oct/2017 12:25:58] "GET /admin_school_manager/1 HTTP/1.1" 200 7796
 /root/workspace/http/mingjia/mingjia_admin/views.py:740: UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered object_list: <class 'mingjia_admin.models.Classroom'> QuerySet.
   paginator = Paginator(classrooms, limit)
-[25/Oct/2017 12:25:58] "GET /admin_classroom/1 HTTP/1.1" 200 11546
+[25/Oct/2017 12:25:58] "GET /admin_classroom_manager/1 HTTP/1.1" 200 11546
 mysqldump: [Warning] Using a password on the command line interface can be insecure.
 [25/Oct/2017 12:26:00] "GET /admin_backup/ HTTP/1.1" 200 1302
 Not Found: /admin_backup/js/xadmin.js
@@ -571,7 +571,7 @@ Not Found: /admin_backup/css/xadmin.css
 [25/Oct/2017 12:26:00] "GET /admin_backup/css/xadmin.css HTTP/1.1" 404 7904
 Not Found: /admin_backup/lib/layui/layui.js
 [25/Oct/2017 12:26:00] "GET /admin_backup/lib/layui/layui.js HTTP/1.1" 404 7916
-[25/Oct/2017 12:26:02] "GET /admin_add/ HTTP/1.1" 200 7357
+[25/Oct/2017 12:26:02] "GET /admin_add_stu/ HTTP/1.1" 200 7357
 [25/Oct/2017 12:26:09] "GET /admin_teacher_manager/1 HTTP/1.1" 200 20381
 [25/Oct/2017 12:26:19] "GET /admin_teacher_manager/1 HTTP/1.1" 200 20381
 [25/Oct/2017 12:26:20] "GET /static/lib/layui/layui.js HTTP/1.1" 200 5924
@@ -602,7 +602,7 @@ Not Found: /admin_backup/lib/layui/layui.js
 [25/Oct/2017 12:26:48] "GET /static/lib/layui/css/modules/laydate/default/laydate.css?v=5.0.2 HTTP/1.1" 200 7523
 [25/Oct/2017 12:26:48] "GET /admin_teacher_leave/6 HTTP/1.1" 200 139
 [25/Oct/2017 12:26:48] "GET /admin_student/?page_index=1&is_new=1 HTTP/1.1" 200 51401
-[25/Oct/2017 12:26:51] "GET /admin_student_edit/8 HTTP/1.1" 200 7430
+[25/Oct/2017 12:26:51] "GET /admin_stu_edit/8 HTTP/1.1" 200 7430
 [25/Oct/2017 12:26:51] "GET /static/lib/layui/css/modules/layer/default/icon.png HTTP/1.1" 200 11493
 [25/Oct/2017 12:26:51] "GET /static/lib/layui/css/modules/layer/default/loading-1.gif HTTP/1.1" 200 701
 mysqldump: [Warning] Using a password on the command line interface can be insecure.
@@ -771,15 +771,15 @@ Logged from file basehttp.py, line 124
 [25/Oct/2017 12:33:37] "GET /static/lib/layui/lay/modules/layer.js HTTP/1.1" 304 0
 [25/Oct/2017 12:33:37] "GET /static/lib/layui/lay/modules/element.js HTTP/1.1" 304 0
 [25/Oct/2017 12:33:37] "GET /static/lib/layui/css/modules/layer/default/layer.css?v=3.0.3 HTTP/1.1" 304 0
-[25/Oct/2017 12:34:00] "GET /admin_classroom/1 HTTP/1.1" 200 11546
-[25/Oct/2017 12:34:02] "GET /admin_campus/1 HTTP/1.1" 200 11020
-[25/Oct/2017 12:34:04] "GET /admin_school/1 HTTP/1.1" 200 7796
-[25/Oct/2017 12:34:10] "GET /admin_classroom/1 HTTP/1.1" 200 11546
-[25/Oct/2017 12:34:12] "GET /admin_campus/1 HTTP/1.1" 200 11020
+[25/Oct/2017 12:34:00] "GET /admin_classroom_manager/1 HTTP/1.1" 200 11546
+[25/Oct/2017 12:34:02] "GET /admin_campus_manager/1 HTTP/1.1" 200 11020
+[25/Oct/2017 12:34:04] "GET /admin_school_manager/1 HTTP/1.1" 200 7796
+[25/Oct/2017 12:34:10] "GET /admin_classroom_manager/1 HTTP/1.1" 200 11546
+[25/Oct/2017 12:34:12] "GET /admin_campus_manager/1 HTTP/1.1" 200 11020
 [25/Oct/2017 12:34:13] "GET /static/lib/layui/layui.js HTTP/1.1" 200 5924
 [25/Oct/2017 12:34:13] "GET /static/lib/layui/layui.js HTTP/1.1" 200 5924
 [25/Oct/2017 12:34:13] "GET /static/js/xadmin.js HTTP/1.1" 200 5459
-[25/Oct/2017 12:34:14] "GET /admin_school/1 HTTP/1.1" 200 7796
+[25/Oct/2017 12:34:14] "GET /admin_school_manager/1 HTTP/1.1" 200 7796
 [25/Oct/2017 12:34:14] "GET /static/js/xadmin.js HTTP/1.1" 200 5459
 [25/Oct/2017 12:34:14] "GET /admin_add_course/ HTTP/1.1" 200 7113
 [25/Oct/2017 12:34:15] "GET /admin_course_manager/1 HTTP/1.1" 200 13975
@@ -796,7 +796,7 @@ Logged from file basehttp.py, line 124
 [25/Oct/2017 12:34:27] "GET /static/js/xadmin.js HTTP/1.1" 200 5459
 [25/Oct/2017 12:34:48] "GET /admin_teacher_add/ HTTP/1.1" 200 6910
 [25/Oct/2017 12:35:42] "POST /admin_teacher_add_handle/ HTTP/1.1" 200 36
-[25/Oct/2017 12:38:42] "GET /admin_classroom/1 HTTP/1.1" 200 11546
+[25/Oct/2017 12:38:42] "GET /admin_classroom_manager/1 HTTP/1.1" 200 11546
 [25/Oct/2017 12:38:42] "GET /static/css/font.css HTTP/1.1" 304 0
 [25/Oct/2017 12:38:42] "GET /static/css/xadmin.css HTTP/1.1" 304 0
 [25/Oct/2017 12:38:42] "GET /static/lib/layui/layui.js HTTP/1.1" 304 0

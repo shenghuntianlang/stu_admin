@@ -143,7 +143,7 @@
             <td id="remark">{{ school.remark }}</td>
 
             <td class="td-manage">
-                <a title="编辑" onclick="x_admin_show('编辑','/edit_school/{{ school.id }}')" href="javascript:;">
+                <a title="编辑" onclick="x_admin_show('编辑','/admin_school_edit/?school_id={{ school.id }}')" href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
                 <a title="删除" onclick="member_del(this,{{ school.id }})" href="javascript:;">
@@ -190,7 +190,16 @@
 
                 if (!first) {
 
-                    window.location.href = '/admin_campus/' + obj.curr;
+                    {% if is_local_school == True %}
+
+                         window.location.href = '/admin_school_manager/?index=' + obj.curr;
+
+                    {% else %}
+
+                        window.location.href = '/admin_campus_manager/?index=' + obj.curr;
+
+                    {% endif %}
+
 
                 }
 
@@ -247,7 +256,7 @@
 
             $.ajax({
 
-                'url': '/admin_del_schools/',
+                'url': '/admin_schools_del/',
                 'type': 'post',
                 'data': json,
                 'success': function (data) {
@@ -288,10 +297,6 @@
 
         //监听提交
         form.on('submit(add)', function (data) {
-            console.log('打印开始')
-            console.log(data);
-            console.log('打印结束')
-            //发异步，把数据提交给php
 
             data.field.is_local_school =  {% if is_local_school %}
 
@@ -304,7 +309,8 @@
 
             $.ajax({
                 type: 'post',
-                url: '/admin_add_school/',
+
+                url: '/admin_school_add/',
                 contentType: 'application/json;charset=utf-8',
                 data: json_student_info,
                 success: function (data) {
@@ -335,11 +341,7 @@
             return false;
         });
 
-
     });
-
-
-    {#    add#}
 
 
 </script>

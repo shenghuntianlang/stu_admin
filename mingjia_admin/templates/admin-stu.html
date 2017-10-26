@@ -38,7 +38,7 @@
 <div class="layui-row">
 
 
-    <form class="layui-form  x-so" METHOD="get" ACTION="/get_students/{{ is_new }}" accept-charset="UTF-8">
+    <form class="layui-form  x-so" METHOD="get" ACTION="/admin_search_stu" accept-charset="UTF-8">
 
 
         {% if is_new != 1 %}
@@ -79,6 +79,9 @@
         <input type="text" name="remark" placeholder="备注" value="{{ search_params.remark__contains }}"
                autocomplete="off" class="layui-input">
 
+
+        <input type="text" name="is_new" value="{{ is_new }}" hidden/>
+
         <button class="layui-btn" lay-filter="sreach"><i class="layui-icon">&#xe615;</i>
         </button>
     </form>
@@ -94,7 +97,7 @@
     <button class="layui-btn"
             onclick="x_admin_show('批量打印','/admin_print_more/?type=0&is_search={{ is_search }}&is_new={{ is_new }}&index={{ page_index }}&course_id={{ search_params.course_id }}&school_name={{ search_params.school_name__contains }}&phone={{ search_params.phone__contains }}&name={{ search_params.name__contains }}&remark={{ search_params.remark__contains }}')">
 
-        <i class="layui-icon"></i>打印显示学员信息
+        打印显示学员信息
 
     </button>
     <span class="x-right" style="line-height:40px">共有数据：{{ total }}条</span>
@@ -143,7 +146,7 @@
 
             <td class="td-manage">
 
-                <a title="详情" onclick="x_admin_show('学员信息','/admin_student_detail/{{ student.id }}')"
+                <a title="详情" onclick="x_admin_show('学员信息','/admin_stu_detail/?stu_id={{ student.id }}')"
                    href="javascript:;">
                     <i class="layui-icon">&#xe62a;</i>
                 </a>
@@ -153,7 +156,8 @@
                     <i class="layui-icon">&#xe629;</i>
                 </a>
 
-                <a title="编辑" onclick="x_admin_show('编辑','/admin_student_edit/{{ student.id }}')" href="javascript:;">
+                <a title="编辑" onclick="x_admin_show('编辑','/admin_stu_edit/?stu_id={{ student.id }}')"
+                   href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
                 <a title="删除" onclick="member_del(this,{{ student.id }})" href="javascript:;">
@@ -201,7 +205,7 @@
 
                 if (!first) {
 
-                    window.location.href = '/admin_student/?page_index=' + obj.curr + '&is_new={{ is_new }}';
+                    window.location.href = '/admin_stu_manager/?page_index=' + obj.curr + '&is_new={{ is_new }}';
 
                 }
 
@@ -224,7 +228,7 @@
             $.ajax({
 
                 'type': 'get',
-                'url': '/del_student/?stu_id=' + id,
+                'url': '/admin_del_stu/?stu_id=' + id,
                 'success': function (data) {
 
                     if (data.result == 'success') {
@@ -260,7 +264,7 @@
 
             $.ajax({
 
-                'url': '/del_students/',
+                'url': '/admin_del_stus/',
                 'type': 'post',
                 'data': json,
                 'success': function (data) {

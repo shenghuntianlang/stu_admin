@@ -114,7 +114,7 @@
             var json_student_info = JSON.stringify(data.field);
             $.ajax({
                 type: 'post',
-                url: '/edit_classroom_handle/',
+                url: '/admin_edit_classroom_handle/',
                 contentType: 'application/json;charset=utf-8',
                 data: json_student_info,
                 success: function (data) {
