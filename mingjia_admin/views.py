@@ -591,7 +591,7 @@ def admin_course_edit(request, course_id):
 
 @csrf_exempt
 def admin_course_edit_handle(request):
-    # print(request.body)
+    # print(request.body
     # {"course_name": "2017春季许岑新希望", "teacher_id": "1", "class_id": "2", "course_time": "17:00 - 18:00",
     #  "remark": "这是一个备注信息"}
     course_info = json.loads(request.body)
