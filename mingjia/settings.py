@@ -25,7 +25,7 @@ SECRET_KEY = '-$jo914-j8fgg^ill&!pk-xm)-xmc2f2sgc_a1_gu%0=9f-94s'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['120.78.147.27']
 
 # Application definition
 
@@ -121,3 +121,4 @@ USE_TZ = False
 STATIC_URL = '/static/'
 
 # TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'mingjia_admin/templates'),)
+
