@@ -184,7 +184,7 @@ def admin_student_manager(request):
     page_index = request.GET['page_index']
     is_new = request.GET['is_new']
 
-    print(is_new)
+    # print(is_new)
 
     stu = get_student(page_index, is_new)
 
@@ -335,7 +335,7 @@ def admin_student_detail(request, student_id):
     :param student_id:
     :return:
     """
-    print(student_id)
+    # print(student_id)
     student = Student.objects.all().get(id=student_id)
     # 时间格式转化
     student.entrance_time = student.entrance_time.strftime("%Y-%m-%d")
