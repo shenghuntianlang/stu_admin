@@ -15,7 +15,7 @@ import time
 from user import user_decorator
 
 KEY = 'username'
-limit = 2
+limit = 30
 
 
 # Create your views here.
