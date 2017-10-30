@@ -594,8 +594,10 @@ def admin_search_teacher(request):
                }
 
     for t in teachers:
-        t.birthday = t.birthday.strftime("%Y-%m-%d")
-        t.entry_date = t.entry_date.strftime("%Y-%m-%d")
+        if t.birthday!=None:
+            t.birthday = t.birthday.strftime("%Y-%m-%d")
+        if t.entry_date!=None:
+            t.entry_date = t.entry_date.strftime("%Y-%m-%d")
         if t.leave_date != None:
             t.leave_date = t.leave_date.strftime("%Y-%m-%d")
         else:
@@ -1159,9 +1161,9 @@ def create_teacher_table(teacher_id):
     teacher = Teacher.objects.get(id=teacher_id)
 
     # 格式化时间
-    if teacher.entry_date!=None:
+    if teacher.entry_date != None:
         teacher.entry_date = teacher.entry_date.strftime('%Y-%m-%d')
-    if teacher.birthday!=None:
+    if teacher.birthday != None:
         teacher.birthday = teacher.birthday.strftime('%Y-%m-%d')
     if teacher.leave_date != None:
         teacher.leave_date = teacher.leave_date.strftime('%Y-%m-%d')
@@ -1509,7 +1511,8 @@ def admin_print_more(request):
             search_params = admin_get_search_stus_params(request)
             students = Student.objects.filter(**search_params)
             for s in students:
-                s.register_date = s.register_date.strftime("%Y-%m-%d")
+                if s.register_date != None:
+                    s.register_date = s.register_date.strftime("%Y-%m-%d")
             table_name = create_students_table(students)
             context = {'table_name': table_name}
 
@@ -1537,6 +1540,7 @@ def admin_print_more(request):
             search_params = get_search_courses_params(request)
             courses = Course.objects.all().filter(**search_params).filter(id__gt=1)
             table_name = create_courses_table(courses)
+            context = {'table_name': table_name}
 
     return render(request, 'admin-print.html', context)
 
