@@ -62,8 +62,6 @@
 
 
         </div>
-
-
         <div class="layui-form-item">
 
             <label for="entrance_time" class="layui-form-label">
@@ -86,78 +84,95 @@
             <label for="school_name" class="layui-form-label">
                 <span class="x-red">*</span>所在小学
             </label>
+
+
             <div class="layui-input-inline">
-                <input type="text" id="school_name" name="school_name" required="" lay-verify="required"
-                       autocomplete="off" value="{{ student_info.school_name }}" class="layui-input">
-            </div>
+                <select id="school_name" name="school_name" lay-search lay-verify="required">
 
-            <div class="layui-form-mid layui-word-aux">
-                <span class="x-red">*</span>请填写小学就读的学校，相同小学请保持唯一名称
-            </div>
+                    <option value=""></option>
 
-        </div>
+                    {% for school in schools %}
 
-
-        <div class="layui-form-item">
-            <label for="class_id" class="layui-form-label">
-                <span class="x-red">*</span>班级
-            </label>
-            <div class="layui-input-inline">
-                <input type="text" id="class_id" name="class_id" required=""
-                       lay-verify="number" value="{{ student_info.class_name }}" autocomplete="off" class="layui-input">
-            </div>
-        </div>
-
-        <div class="layui-form-item">
-            <label for="phone" class="layui-form-label">
-                <span class="x-red">*</span>联系方式
-            </label>
-            <div class="layui-input-inline">
-                <input type="text" id="phone" name="phone" required="" lay-verify="phone"
-                       value="{{ student_info.phone }}" autocomplete="off" class="layui-input">
-            </div>
-        </div>
-
-        <div class="layui-form-item">
-            <label class="layui-form-label">所在班次</label>
-            <div class="layui-input-inline">
-                <select name="course_id" lay-verify="required">
-
-
-                    {% for course in courses %}
-
-                        <option {% if course.id == student_info.course_id %}
+                        <option {% if school.id == student_info.school_id %}
 
                             selected
 
                         {% endif %}
 
-                            value={{ course.id }}> {{ course.name }}</option>
+                            value={{ school.id }}> {{ school.school_name }}</option>
 
                     {% endfor %}
                 </select>
+
+
+                <div class="layui-form-mid layui-word-aux">
+                    <span class="x-red">*</span>请填写小学就读的学校，相同小学请保持唯一名称
+                </div>
+
             </div>
-        </div>
 
 
-        <div class="layui-form-item">
-
-            <div class="layui-form-item layui-form-text">
-                <label for="remark" class="layui-form-label">备注</label>
-                <div class="layui-input-block">
-                    <textarea id="remark" name="remark" placeholder="请输入内容"
-                              class="layui-textarea">{{ student_info.remark }}</textarea>
+            <div class="layui-form-item">
+                <label for="class_id" class="layui-form-label">
+                    <span class="x-red">*</span>班级
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="class_id" name="class_id" required=""
+                           lay-verify="number" value="{{ student_info.class_name }}" autocomplete="off"
+                           class="layui-input">
                 </div>
             </div>
-        </div>
 
-        <div class="layui-form-item">
-            <label for="L_repass" class="layui-form-label">
-            </label>
-            <button class="layui-btn" lay-filter="add" lay-submit="">
-                修改
-            </button>
-        </div>
+            <div class="layui-form-item">
+                <label for="phone" class="layui-form-label">
+                    <span class="x-red">*</span>联系方式
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="phone" name="phone" required="" lay-verify="phone"
+                           value="{{ student_info.phone }}" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">所在班次</label>
+                <div class="layui-input-inline">
+                    <select name="course_id" lay-verify="required">
+
+
+                        {% for course in courses %}
+
+                            <option {% if course.id == student_info.course_id %}
+
+                                selected
+
+                            {% endif %}
+
+                                value={{ course.id }}> {{ course.name }}</option>
+
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="layui-form-item">
+
+                <div class="layui-form-item layui-form-text">
+                    <label for="remark" class="layui-form-label">备注</label>
+                    <div class="layui-input-block">
+                    <textarea id="remark" name="remark" placeholder="请输入内容"
+                              class="layui-textarea">{{ student_info.remark }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label for="L_repass" class="layui-form-label">
+                </label>
+                <button class="layui-btn" lay-filter="add" lay-submit="">
+                    修改
+                </button>
+            </div>
 
     </form>
 </div>
@@ -196,8 +211,8 @@
                             layer.close(index)
 
                         });
-                    }else {
-                         layer.alert("修改失败", {icon: 2}, function (index) {
+                    } else {
+                        layer.alert("修改失败", {icon: 2}, function (index) {
 
                             layer.close(index)
 

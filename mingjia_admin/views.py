@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import os
 import xlwt
+import xlrd
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.shortcuts import render, render_to_response
@@ -124,7 +125,8 @@ def admin_add_stu_handle(request):
     student.gender = student_info['sex']
     student.phone = student_info['phone']
     student.entrance_time = student_info['entrance_time']
-    student.school_name = student_info['school_name']
+    print(student_info['school_name'])
+    student.school_id = student_info['school_name']
     student.class_name = student_info['class_id']
     student.course_id = student_info['course_id']
     student.register_date = datetime.date.today()
@@ -142,14 +144,15 @@ def admin_add_stu_handle(request):
     # 当选择的班级不是暂无安排的时候才进行人数的判断
     if int(course_id) != 1:
         course = Course.objects.get(id=course_id)
-        # 这个班次总共可容纳的人数
-        places = course.class_field.places
-        # print(places)
+
         # 当前人数
         curr_num = Student.objects.all().filter(course_id=course_id).count()
         # print('当前人数-->', curr_num)
-        if curr_num >= places:
-            resp.remark = "注意！！！当前班次可容纳的总人数为: " + str(places) + "人, 当前的报名人数为: " + str(curr_num) + "人, 请注意是否继续报名!"
+        # 这个班次总共可容纳的人数
+        if course.class_field != None:
+            places = course.class_field.places
+            if curr_num >= places:
+                resp.remark = "注意！！！当前班次可容纳的总人数为: " + str(places) + "人, 当前的报名人数为: " + str(curr_num) + "人, 请注意是否继续报名!"
 
     return HttpResponse(json.dumps(resp.__dict__, encoding='utf-8'), content_type='application/json')
 
@@ -194,7 +197,7 @@ def admin_get_student(page_index, is_new):
     :return: 返回一个元组包含与学生相关信息
     """
     if is_new == '1':
-        students = Student.objects.filter(is_delete=0).filter(course_id=1)
+        students = Student.objects.filter(is_delete=0).filter(course_id=7)
     else:
         students = Student.objects.filter(is_delete=0)
 
@@ -204,10 +207,12 @@ def admin_get_student(page_index, is_new):
     for p in page:
         p.grade = calculate_grade(p.entrance_time)
         p.entrance_time = p.entrance_time.strftime("%Y-%m-%d")
-        p.register_date = p.register_date.strftime("%Y-%m-%d")
+        if p.register_date != None:
+            p.register_date = p.register_date.strftime("%Y-%m-%d")
         # 计算学员就读的年级并更新数据库中的字段
         stu = Student.objects.get(id=p.id)
-        stu.temp_class = calculate_grade(stu.entrance_time)
+        p.temp_class = calculate_grade(stu.entrance_time)
+        stu.temp_class = p.temp_class
         stu.save()
 
     return (paginator, page, limit, students)
@@ -224,9 +229,19 @@ def admin_search_stu(request):
     is_new = request.GET['is_new']
 
     search_params = admin_get_search_stus_params(request)
+
+    print(is_new)
+
+    if int(is_new) == 1:
+        search_params['course_id'] = 7
+
+    print(search_params)
+
     students = Student.objects.filter(**search_params)
     for s in students:
-        s.register_date = s.register_date.strftime("%Y-%m-%d")
+        if s.register_date != None:
+            s.register_date = s.register_date.strftime("%Y-%m-%d")
+        s.temp_class = calculate_grade(s.entrance_time)
 
     if 'course_id' in search_params.keys():
         search_params['course_id'] = long(search_params['course_id'])
@@ -254,11 +269,16 @@ def admin_get_search_stus_params(request):
             # 用于过滤打印时上传的参数
             if key == 'type' or key == 'is_search' or key == 'is_new' or key == 'index':
                 continue
-            if key == 'course_id' or key == 'temp_class':
+            elif key == 'course_id':
                 search_params[key] = value
+            elif key == 'temp_class':
+                search_params[key] = value
+            elif key == 'school_name':
+                search_params['school__school_name__contains'] = value
             else:
                 search_params[key + "__contains"] = value
     search_params['is_delete'] = 0
+    search_params['school__is_delete'] = 2
     return search_params
 
 
@@ -311,9 +331,16 @@ def admin_stu_edit(request):
     stu_id = request.GET['stu_id']
     student = Student.objects.get(id=stu_id)
     student.entrance_time = student.entrance_time.strftime("%Y-%m-%d")
+
+    schools = School.objects.filter(is_delete=2)
+
+    print(schools)
+
     context = {'student_info': student,
-               'courses': get_courses()
+               'courses': get_courses(),
+               'schools': schools
                }
+
     return render(request, 'admin-stu-edit.html', context)
 
 
@@ -326,11 +353,14 @@ def admin_stu_edit_handle(request):
     student.gender = student_info['sex']
     student.phone = student_info['phone']
     student.entrance_time = student_info['entrance_time']
-    student.school_name = student_info['school_name']
+
+    print(student_info['school_name'])
+    student.school_id = student_info['school_name']
     student.class_name = student_info['class_id']
     student.course_id = student_info['course_id']
     student.register_date = datetime.date.today()
     student.remark = student_info['remark']
+
     student.save()
 
     resp = Response()
@@ -350,7 +380,8 @@ def admin_stu_detail(request):
     stu_id = request.GET['stu_id']
     student = Student.objects.all().get(id=stu_id)
     student.entrance_time = student.entrance_time.strftime("%Y-%m-%d")
-    student.register_date = student.register_date.strftime("%Y-%m-%d")
+    if student.register_date != None:
+        student.register_date = student.register_date.strftime("%Y-%m-%d")
     context = {'student_info': student}
     return render(request, 'admin-stu-detail.html', context)
 
@@ -383,6 +414,7 @@ def admin_teacher_add_handle(request):
 
     teacher_info = json.loads(request.body)
     teacher = Teacher()
+    print(teacher_info['teacher_name'])
     teacher.name = teacher_info['teacher_name']
     identity = teacher_info['identity']
     teacher.id_number = identity
@@ -438,8 +470,10 @@ def admin_get_teacher(page_index):
     teachers = Teacher.objects.all();
 
     for t in teachers:
-        t.birthday = t.birthday.strftime("%Y-%m-%d")
-        t.entry_date = t.entry_date.strftime("%Y-%m-%d")
+        if t.birthday != None:
+            t.birthday = t.birthday.strftime("%Y-%m-%d")
+        if t.entry_date != None:
+            t.entry_date = t.entry_date.strftime("%Y-%m-%d")
         if t.leave_date != None:
             t.leave_date = t.leave_date.strftime("%Y-%m-%d")
         else:
@@ -475,7 +509,8 @@ def admin_teacher_manager(request):
 def admin_teacher_edit(request):
     teacher_id = request.GET['teacher_id']
     teacher_info = Teacher.objects.get(id=teacher_id)
-    teacher_info.entry_date = teacher_info.entry_date.strftime('%Y-%m-%d')
+    if teacher_info.entry_date != None:
+        teacher_info.entry_date = teacher_info.entry_date.strftime('%Y-%m-%d')
 
     context = {'teacher_info': teacher_info,
                'edu': get_edu(),
@@ -494,7 +529,9 @@ def admin_teacher_edit_handle(request):
     teacher.name = teacher_info['teacher_name']
     teacher.gender = teacher_info['gender']
     teacher.entry_date = teacher_info['entrance_time']
-    teacher.id_number = teacher_info['identity']
+    identity = teacher_info['identity']
+    teacher.id_number = identity
+    teacher.birthday = get_birthday(identity)
     teacher.phone = teacher_info['phone']
     teacher.edu = teacher_info['edu']
     teacher.english_level = teacher_info['english_level']
@@ -506,7 +543,6 @@ def admin_teacher_edit_handle(request):
     elif 1 == int(teacher_info['status']):
         teacher.leave_date = datetime.date.today()
         teacher.is_delete = 1
-
 
     teacher.save()
 
@@ -708,7 +744,7 @@ def get_courses_page(index):
     :param index:
     :return:
     """
-    courses = Course.objects.all().filter(is_delete=0).filter(id__gt=1)
+    courses = Course.objects.all().filter(is_delete=0).filter(id__gt=7).order_by('-id')
     paginator = Paginator(courses, limit)
     page = paginator.page(index)
     return (page, limit, courses)
@@ -1124,8 +1160,10 @@ def create_teacher_table(teacher_id):
     teacher = Teacher.objects.get(id=teacher_id)
 
     # 格式化时间
-    teacher.entry_date = teacher.entry_date.strftime('%Y-%m-%d')
-    teacher.birthday = teacher.birthday.strftime('%Y-%m-%d')
+    if teacher.entry_date!=None:
+        teacher.entry_date = teacher.entry_date.strftime('%Y-%m-%d')
+    if teacher.birthday!=None:
+        teacher.birthday = teacher.birthday.strftime('%Y-%m-%d')
     if teacher.leave_date != None:
         teacher.leave_date = teacher.leave_date.strftime('%Y-%m-%d')
 
@@ -1289,11 +1327,13 @@ def create_course_table(id):
 
     sheet1.write(startLine + 8, 0, '上课地点:', style_content)
 
-    sheet1.write(startLine + 8, 1, course.class_field.name + "-" + course.class_field.school.school_name, style_content)
+    if course.class_field != None:
+        sheet1.write(startLine + 8, 1, course.class_field.name + "-" + course.class_field.school.school_name,
+                     style_content)
+
+        sheet1.write(startLine + 10, 1, course.class_field.places, style_content)
 
     sheet1.write(startLine + 10, 0, '班次人数:', style_content)
-
-    sheet1.write(startLine + 10, 1, course.class_field.places, style_content)
 
     sheet1.write(startLine + 12, 0, '备注:', style_content)
 
@@ -1434,7 +1474,8 @@ def create_courses_table(coureses):
         sheet1.write(line, 1, c.name, style_title)
         sheet1.write(line, 2, c.teacher.name, style_title)
         sheet1.write(line, 3, c.time, style_title)
-        sheet1.write(line, 4, c.class_field.name + "-" + c.class_field.school.school_name, style_title)
+        if c.class_field != None:
+            sheet1.write(line, 4, c.class_field.name + "-" + c.class_field.school.school_name, style_title)
 
         line += 1
 
@@ -1532,7 +1573,7 @@ def create_students_table(students):
         sheet1.write(line, 2, s.gender, style_title)
         sheet1.write(line, 3, s.course.name, style_title)
         sheet1.write(line, 4, s.phone, style_title)
-        sheet1.write(line, 5, s.school_name, style_title)
+        sheet1.write(line, 5, s.school.school_name, style_title)
         # 当前学生所在的年级需要单独计算
         sheet1.write(line, 6, '3', style_title)
         line += 1
@@ -1608,11 +1649,11 @@ def create_student_table(id):
 
     sheet1.write(startLine + 6, 2, '学校:', style_content)
 
-    sheet1.write(startLine + 6, 3, student.school_name, style_content)
+    sheet1.write(startLine + 6, 3, student.school.school_name, style_content)
 
     sheet1.write(startLine + 8, 0, '入校时间:', style_content)
 
-    sheet1.write(startLine + 8, 1, student.entrance_time, style_content)
+    sheet1.write(startLine + 8, 1, student.entrance_time.strftime('"%Y-%m-%d"'), style_content)
 
     sheet1.write(startLine + 8, 2, '年级:', style_content)
     sheet1.write(startLine + 8, 3, student.temp_class, style_content)
@@ -1647,9 +1688,11 @@ def create_student_table(id):
         sheet1.write(startLine + 21, 1, student.course.teacher.phone, style_content)
 
         sheet1.write(startLine + 23, 0, '上课地点:', style_content)
-        sheet1.write(startLine + 23, 1,
-                     student.course.class_field.name + "--" + student.course.class_field.school.school_name,
-                     style_content)
+
+        if student.course.class_field != None:
+            sheet1.write(startLine + 23, 1,
+                         student.course.class_field.name + "--" + student.course.class_field.school.school_name,
+                         style_content)
 
         sheet1.write(startLine + 25, 0, '班次时间:', style_content)
         sheet1.write(startLine + 25, 1, student.course.time, style_content)
@@ -1809,7 +1852,134 @@ def get_birthday(identity):
     return datetime.date(year, month, day)
 
 
+def importTeacher(request):
+    curr_path = os.getcwd()
+
+    excel_path = 'mingjia_admin/file/teachers.xlsx'
+    workbook = xlrd.open_workbook(excel_path)
+
+    #  ctype :  0 empty,1 string, 2 number, 3 date, 4 boolean, 5 error
+    sheet = workbook.sheet_by_index(0)
+
+    for x in xrange(1, sheet.nrows):
+        teacher_id = int(sheet.cell_value(x, 0))
+        teacher_name = sheet.cell_value(x, 1).encode('utf-8')
+        teacher_remark = sheet.cell_value(x, 2).encode('utf-8')
+        teacher = Teacher()
+        teacher.name = teacher_name
+        teacher.remark = teacher_remark
+        teacher.is_delete = 0
+        print(teacher_name)
+        teacher.save()
+
+    return HttpResponse('导入教师信息')
+
+
+# def importCourse(request):
+#     teacher_id_map = {7: 56, 35: 57, 36: 58, 37: 59, 38: 60, 39: 61, 40: 62, 41: 63, 42: 64, 43: 65, 44: 66, 45: 67,
+#                       46: 68, 49: 69, 50: 70, 51: 71, 52: 72}
+#
+#     excel_path = 'mingjia_admin/file/courses.xlsx'
+#     workbook = xlrd.open_workbook(excel_path)
+#
+#     #  ctype :  0 empty,1 string, 2 number, 3 date, 4 boolean, 5 error
+#     sheet = workbook.sheet_by_index(0)
+#     for x in xrange(1, sheet.nrows):
+#         course_name = sheet.cell_value(x, 1).encode('utf-8')
+#         teacher_id = teacher_id_map[int(sheet.cell_value(x, 2))]
+#         course_time = sheet.cell_value(x, 3).encode('utf-8')
+#         remark = sheet.cell_value(x, 5).encode('utf-8')
+#
+#         course = Course()
+#         course.name = course_name
+#         course.teacher_id = teacher_id
+#         course.time = course_time
+#         course.remark = remark
+#         course.is_delete = 0
+#         course.save()
+#
+#         print(course_name)
+#         print (teacher_id)
+#         print (course_time)
+#         print (remark)
+#     return HttpResponse("导入班次信息")
+
+
+# def importCourse(request):
+#     course_id_map = {};
+#
+#     excel_path = 'mingjia_admin/file/courses.xlsx'
+#     workbook = xlrd.open_workbook(excel_path)
+#
+#     # 建立班次映射
+#     sheet = workbook.sheet_by_index(0)
+#     for x in xrange(1, sheet.nrows):
+#         # key
+#         course_id = int(sheet.cell_value(x, 0))
+#         course_name = sheet.cell_value(x, 1).encode('utf-8')
+#
+#         course = Course.objects.get(name=course_name)
+#
+#         course_id_map[course_id] = int(course.id)
+#
+#         print(str(course_id) + "=>" + str(course.id))
+#
+#     excel_stu_path = 'mingjia_admin/file/students.xlsx'
+#
+#     workbook_stu = xlrd.open_workbook(excel_stu_path)
+#     sheet_stu = workbook_stu.sheet_by_index(0)
+#
+#     schools = []
+#
+#     for x in xrange(1, sheet_stu.nrows):
+#         student = Student()
+#
+#         stu_name = sheet_stu.cell_value(x, 1).encode('utf-8')
+#         student.name = stu_name
+#         print(stu_name)
+#         stu_gender = sheet_stu.cell_value(x, 2).encode('utf-8')
+#         student.gender = stu_gender
+#         stu_school = sheet_stu.cell_value(x, 3).encode('utf-8')
+#         school = School.objects.get(school_name=stu_school)
+#
+#         student.school_id = school.id
+#
+#         entranceTime = sheet_stu.cell_value(x, 4)
+#
+#         date_value = xlrd.xldate_as_tuple(entranceTime, workbook.datemode)
+#         entranceTime_data = date(*date_value[:3])
+#
+#         student.entrance_time = entranceTime_data
+#
+#         stu_class = int(sheet_stu.cell_value(x, 5))
+#
+#         student.class_name = stu_class
+#
+#         stu_phone = int(sheet_stu.cell_value(x, 6))
+#
+#         student.phone = stu_phone
+#         stu_remark = sheet_stu.cell_value(x, 7)
+#
+#         student.remark = stu_remark
+#
+#         course = sheet_stu.cell_value(x, 8)
+#         print (type(course))
+#         if course != "":
+#             course_id = int(sheet_stu.cell_value(x, 8))
+#
+#         student.course_id = course_id_map[course_id]
+#
+#         student.is_delete = 0
+#
+#         student.save()
+#
+#
+#
+#     return HttpResponse("导入班次信息")
+
+
 # ********************** 工具类 **********************
+
 
 class Response:
     status = 200

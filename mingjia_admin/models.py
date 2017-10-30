@@ -170,7 +170,7 @@ class Student(models.Model):
     gender = models.CharField(max_length=2, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     entrance_time = models.DateField(blank=True, null=True)
-    school_name = models.CharField(max_length=104, blank=True, null=True)
+    school = models.ForeignKey(School, models.DO_NOTHING, blank=True, null=True)
     class_name = models.IntegerField(blank=True, null=True)
     grade = models.CharField(max_length=2, blank=True, null=True)
     temp_class = models.IntegerField(blank=True, null=True)

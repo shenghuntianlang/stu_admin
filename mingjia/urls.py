@@ -18,6 +18,7 @@ from django.contrib import admin
 from mingjia_admin import views
 
 urlpatterns = [
+    url(r'^$',views.index),
     url(r'^admin/', admin.site.urls),
     url(r'^admin_print/(\d+)/(\d+)$', views.admin_print),
     url(r'^admin_print_more/$', views.admin_print_more),
@@ -77,7 +78,10 @@ urlpatterns = [
     url(r'^admin_schools_del/$', views.admin_schools_del),
 
     url(r'^admin_download/([\s\S]*)$', views.admin_download),
-    url(r'^admin_backup/$', views.admin_backup)
+    url(r'^admin_backup/$', views.admin_backup),
+
+    # url(r'^import_teacher', views.importTeacher),
+    # url(r'^import_courses', views.importCourse)
 
 
 

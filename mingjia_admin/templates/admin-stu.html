@@ -45,7 +45,9 @@
 
             <label class="layui-label">班次:&nbsp;&nbsp;</label>
             <div class="layui-input-inline">
-                <select name="course_id" lay-verify="required">
+                <select name="course_id"  lay-search lay-verify="required" >
+
+                      <option selected value=""></option>
                     {% for course in courses %}
 
                         {% if course.id == search_params.course_id %}
@@ -68,7 +70,7 @@
         <input type="number" name="phone" placeholder="手机号码" value="{{ search_params.phone__contains }}"
                autocomplete="off" class="layui-input">
         <label class="layui-label">&nbsp;&nbsp;学校:&nbsp;&nbsp; </label>
-        <input type="text" name="school_name" placeholder="学校" value="{{ search_params.school_name__contains }}"
+        <input type="text" name="school_name" placeholder="学校" value="{{ search_params.school__school_name__contains }}"
                autocomplete="off" class="layui-input">
 
 
@@ -138,7 +140,7 @@
             <td id="gender">{{ student.gender }}</td>
             <td id="course_name">{{ student.course.name }}</td>
             <td id="phone">{{ student.phone }}</td>
-            <td id="school_name">{{ student.school_name }}</td>
+            <td id="school_name">{{ student.school.school_name }}</td>
             <td id="grade">{{ student.temp_class }}</td>
             <td id="class_name">{{ student.class_name }}</td>
             <td id="register">{{ student.register_date }}</td>
