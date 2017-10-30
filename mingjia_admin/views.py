@@ -614,7 +614,8 @@ def admin_search_teacher(request):
 
 @user_decorator.login
 def admin_add_course(request):
-    classrooms = Classroom.objects.all()
+    # 只查询未删除的
+    classrooms = Classroom.objects.all().filter(is_delete=0)
     teachers = Teacher.objects.all().filter(leave_date=None)
 
     context = {'classrooms': classrooms,
