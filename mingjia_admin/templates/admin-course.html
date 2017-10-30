@@ -124,7 +124,9 @@
 <xblock>
     <button class="layui-btn layui-btn-danger" onclick="del_all()"><i class="layui-icon"></i>批量删除</button>
 
-    <button class="layui-btn" onclick="x_admin_show('批量打印','/admin_print_more/?type=2&is_search={{ is_search }}&index={{index}}&id={{ search_params.id  }}&name={{ search_params.name__contains }}&teacher__name={{ search_params.teacher__name__contains }}&time={{ search_params.time__contains }}&class_field__name={{ search_params.class_field__name__contains }}&remark={{ search_params.remark__contains }}')">打印显示班次信息
+    <button class="layui-btn"
+            onclick="x_admin_show('批量打印','/admin_print_more/?type=2&is_search={{ is_search }}&index={{ index }}&id={{ search_params.id }}&name={{ search_params.name__contains }}&teacher__name={{ search_params.teacher__name__contains }}&time={{ search_params.time__contains }}&class_field__name={{ search_params.class_field__name__contains }}&remark={{ search_params.remark__contains }}')">
+        打印显示班次信息
 
     </button>
     </button>
@@ -172,7 +174,7 @@
                     <i class="layui-icon">&#xe642;</i>
                 </a>
 
-                  <a title="打印" onclick="x_admin_show('下载报表','/admin_print/2/{{ course.id }}')"
+                <a title="打印" onclick="x_admin_show('下载报表','/admin_print/2/{{ course.id }}')"
                    href="javascript:;">
                     <i class="layui-icon">&#xe629;</i>
                 </a>
@@ -206,32 +208,38 @@
         });
     });
 
-    layui.use('laypage', function () {
 
-        var laypage = layui.laypage;
+    {% if is_search == False %}
 
-        //执行一个laypage实例
-        laypage.render({
+        layui.use('laypage', function () {
 
-            elem: 'page'
-            , count: {{ total }}
-            , limit: {{ limit }}
-            , curr: {{ index }}
-            , jump: function (obj, first) {
+            var laypage = layui.laypage;
 
-                if (!first) {
+            //执行一个laypage实例
+            laypage.render({
 
-                    window.location.href = '/admin_course_manager/?index=' + obj.curr;
+                elem: 'page'
+                , count: {{ total }}
+                , limit: {{ limit }}
+                , curr: {{ index }}
+                , jump: function (obj, first) {
+
+                    if (!first) {
+
+                        window.location.href = '/admin_course_manager/?index=' + obj.curr;
+
+                    }
+
 
                 }
 
+            })
 
-            }
 
         })
 
 
-    })
+    {% endif %}
 
 
     /* 用户-删除*/
@@ -278,7 +286,7 @@
 
             $.ajax({
 
-                'url': '/admin_del_courses/',
+                'url': '/admin_courses_del/',
                 'type': 'post',
                 'data': json,
                 'success': function (data) {

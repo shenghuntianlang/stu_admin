@@ -732,7 +732,7 @@ def admin_courses_del(request):
         course.is_delete = 1
         course.save()
 
-    resp = Response();
+    resp = Response()
     resp.status = 200
     resp.result = 'success'
 
@@ -802,6 +802,9 @@ def get_search_courses_params(request):
                 search_params[key] = request.GET[key]
             else:
                 search_params[key + "__contains"] = request.GET[key]
+
+        #
+        search_params['is_delete'] = 0
 
     return search_params
 
