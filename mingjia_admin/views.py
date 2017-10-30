@@ -124,7 +124,7 @@ def admin_add_stu_handle(request):
     student.gender = student_info['sex']
     student.phone = student_info['phone']
     student.entrance_time = student_info['entrance_time']
-    print(student_info['school_name'])
+    # print(student_info['school_name'])
     student.school_id = student_info['school_name']
     student.class_name = student_info['class_id']
     student.course_id = student_info['course_id']
@@ -229,12 +229,12 @@ def admin_search_stu(request):
 
     search_params = admin_get_search_stus_params(request)
 
-    print(is_new)
+    # print(is_new)
 
     if int(is_new) == 1:
         search_params['course_id'] = 7
 
-    print(search_params)
+    # print(search_params)
 
     students = Student.objects.filter(**search_params)
     for s in students:
@@ -333,7 +333,7 @@ def admin_stu_edit(request):
 
     schools = School.objects.filter(is_delete=2)
 
-    print(schools)
+    # print(schools)
 
     context = {'student_info': student,
                'courses': get_courses(),
@@ -353,7 +353,7 @@ def admin_stu_edit_handle(request):
     student.phone = student_info['phone']
     student.entrance_time = student_info['entrance_time']
 
-    print(student_info['school_name'])
+    # print(student_info['school_name'])
     student.school_id = student_info['school_name']
     student.class_name = student_info['class_id']
     student.course_id = student_info['course_id']
@@ -413,7 +413,7 @@ def admin_teacher_add_handle(request):
 
     teacher_info = json.loads(request.body)
     teacher = Teacher()
-    print(teacher_info['teacher_name'])
+    # print(teacher_info['teacher_name'])
     teacher.name = teacher_info['teacher_name']
     identity = teacher_info['identity']
     teacher.id_number = identity
@@ -917,7 +917,7 @@ def admin_search_classroom(request):
     """
     search_params = get_search_classroom_params(request)
 
-    print(search_params)
+    # print(search_params)
 
     classrooms = Classroom.objects.all().filter(**search_params)
 
