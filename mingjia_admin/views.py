@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 import os
 import xlwt
-import xlrd
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.shortcuts import render, render_to_response
@@ -1852,27 +1851,27 @@ def get_birthday(identity):
     return datetime.date(year, month, day)
 
 
-def importTeacher(request):
-    curr_path = os.getcwd()
-
-    excel_path = 'mingjia_admin/file/teachers.xlsx'
-    workbook = xlrd.open_workbook(excel_path)
-
-    #  ctype :  0 empty,1 string, 2 number, 3 date, 4 boolean, 5 error
-    sheet = workbook.sheet_by_index(0)
-
-    for x in xrange(1, sheet.nrows):
-        teacher_id = int(sheet.cell_value(x, 0))
-        teacher_name = sheet.cell_value(x, 1).encode('utf-8')
-        teacher_remark = sheet.cell_value(x, 2).encode('utf-8')
-        teacher = Teacher()
-        teacher.name = teacher_name
-        teacher.remark = teacher_remark
-        teacher.is_delete = 0
-        print(teacher_name)
-        teacher.save()
-
-    return HttpResponse('导入教师信息')
+# def importTeacher(request):
+#     curr_path = os.getcwd()
+#
+#     excel_path = 'mingjia_admin/file/teachers.xlsx'
+#     workbook = xlrd.open_workbook(excel_path)
+#
+#     #  ctype :  0 empty,1 string, 2 number, 3 date, 4 boolean, 5 error
+#     sheet = workbook.sheet_by_index(0)
+#
+#     for x in xrange(1, sheet.nrows):
+#         teacher_id = int(sheet.cell_value(x, 0))
+#         teacher_name = sheet.cell_value(x, 1).encode('utf-8')
+#         teacher_remark = sheet.cell_value(x, 2).encode('utf-8')
+#         teacher = Teacher()
+#         teacher.name = teacher_name
+#         teacher.remark = teacher_remark
+#         teacher.is_delete = 0
+#         print(teacher_name)
+#         teacher.save()
+#
+#     return HttpResponse('导入教师信息')
 
 
 # def importCourse(request):

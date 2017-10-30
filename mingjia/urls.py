@@ -80,9 +80,6 @@ urlpatterns = [
     url(r'^admin_download/([\s\S]*)$', views.admin_download),
     url(r'^admin_backup/$', views.admin_backup),
 
-    # url(r'^import_teacher', views.importTeacher),
-    # url(r'^import_courses', views.importCourse)
-
 
 
 
