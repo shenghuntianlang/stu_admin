@@ -594,9 +594,9 @@ def admin_search_teacher(request):
                }
 
     for t in teachers:
-        if t.birthday!=None:
+        if t.birthday != None:
             t.birthday = t.birthday.strftime("%Y-%m-%d")
-        if t.entry_date!=None:
+        if t.entry_date != None:
             t.entry_date = t.entry_date.strftime("%Y-%m-%d")
         if t.leave_date != None:
             t.leave_date = t.leave_date.strftime("%Y-%m-%d")
@@ -1553,7 +1553,7 @@ def create_students_table(students):
     wbk = xlwt.Workbook('utf-8')
     sheet1 = wbk.add_sheet('Sheet1', cell_overwrite_ok=True)
 
-    header = ['学号', '姓名', '性别', '班次', '电话', '就读小学', '年级']
+    header = ['学号', '姓名', '性别', '班次', '电话', '就读小学', '年级', '班级']
 
     # 设置表格单元格的宽度
     sheet1.col(0).width = 256 * 8
@@ -1563,6 +1563,7 @@ def create_students_table(students):
     sheet1.col(4).width = 256 * 15
     sheet1.col(5).width = 256 * 15
     sheet1.col(6).width = 256 * 8
+    sheet1.col(7).width = 256 * 8
 
     style_title = xlwt.easyxf('font:height 220;')  # 36pt,类型小初的字号
     alignment_title = xlwt.Alignment()  # Create Alignment
@@ -1582,7 +1583,8 @@ def create_students_table(students):
         sheet1.write(line, 4, s.phone, style_title)
         sheet1.write(line, 5, s.school.school_name, style_title)
         # 当前学生所在的年级需要单独计算
-        sheet1.write(line, 6, '3', style_title)
+        sheet1.write(line, 6, s.temp_class, style_title)
+        sheet1.write(line, 7, s.class_name, style_title)
         line += 1
 
     table_name = str(time.time()) + ".xls"
@@ -1809,32 +1811,28 @@ def calculate_grade(entrance_time):
     :param entrance_time:
     :return:
     """
-    # 获取当前的日期
-    todaty = datetime.date.today()
-    curr_year = todaty.year
-    curr_month = todaty.month
-    curr_day = todaty.day
+    if entrance_time != None:
+        # 获取当前的日期
+        todaty = datetime.date.today()
+        curr_year = todaty.year
+        curr_month = todaty.month
+        curr_day = todaty.day
+        # 获取入学日期
+        year = entrance_time.year
+        month = entrance_time.month
+        day = entrance_time.day
 
-    # 获取入学日期
-    year = entrance_time.year
-    month = entrance_time.month
-    day = entrance_time.day
-
-    # 年级
-    grade = curr_year - year
-
-    if month > curr_month:
-        pass
-        # grade -= 1
-    elif month < curr_month:
-        grade += 1
-
-    elif curr_month == month:
-        if day <= curr_day:
-            grade += 1
-        elif day > curr_day:
+        # 年级
+        grade = curr_year - year
+        if month > curr_month:
             pass
-            # grade -= 1
+        elif month < curr_month:
+            grade += 1
+        elif curr_month == month:
+            if day <= curr_day:
+                grade += 1
+            elif day > curr_day:
+                pass
 
     return grade
 
