@@ -241,6 +241,7 @@ def admin_search_stu(request):
         if s.register_date != None:
             s.register_date = s.register_date.strftime("%Y-%m-%d")
         s.temp_class = calculate_grade(s.entrance_time)
+        s.save()
 
     if 'course_id' in search_params.keys():
         search_params['course_id'] = long(search_params['course_id'])
