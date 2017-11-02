@@ -136,7 +136,7 @@ if __name__ == "__main__":
     # while True:
     current_time = time.localtime(time.time())
     # 早上八点钟进行登录
-    if ((current_time.tm_hour == 7) and (current_time.tm_min == 0) and (current_time.tm_sec == 0)):
+    if ((current_time.tm_hour == 11) and (current_time.tm_min == 0) and (current_time.tm_sec == 0)):
         update_stu_grade()
         # 数据库备份
         sendEmail()
