@@ -124,7 +124,6 @@ def admin_add_stu_handle(request):
     student.gender = student_info['sex']
     student.phone = student_info['phone']
     student.entrance_time = student_info['entrance_time']
-    # print(student_info['school_name'])
     student.school_id = student_info['school_name']
     student.class_name = student_info['class_id']
     student.course_id = student_info['course_id']
