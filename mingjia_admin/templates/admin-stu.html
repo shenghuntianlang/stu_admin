@@ -45,9 +45,9 @@
 
             <label class="layui-label">班次:&nbsp;&nbsp;</label>
             <div class="layui-input-inline">
-                <select name="course_id"  lay-search lay-verify="required" >
+                <select name="course_id" lay-search lay-verify="required">
 
-                      <option selected value=""></option>
+                    <option selected value=""></option>
                     {% for course in courses %}
 
                         {% if course.id == search_params.course_id %}
@@ -70,8 +70,21 @@
         <input type="number" name="phone" placeholder="手机号码" value="{{ search_params.phone__contains }}"
                autocomplete="off" class="layui-input">
         <label class="layui-label">&nbsp;&nbsp;学校:&nbsp;&nbsp; </label>
-        <input type="text" name="school_name" placeholder="学校" value="{{ search_params.school__school_name__contains }}"
-               autocomplete="off" class="layui-input">
+            <div class="layui-input-inline">
+                <select name="school_name" lay-search lay-verify="required">
+
+                    <option selected value=""></option>
+                    {% for school in schools %}
+
+                        {% if school.school_name == search_params.school__school_name__contains %}
+                            <option selected value={{ school.school_name }}>{{ school.school_name }}</option>
+                        {% else %}
+                            <option value={{ school.school_name }}>{{ school.school_name }}</option>
+                        {% endif %}
+
+                    {% endfor %}
+                </select>
+            </div>
 
 
         <label class="layui-label">&nbsp;&nbsp;年级:&nbsp;&nbsp; </label>
@@ -122,7 +135,6 @@
         <th>所在小学</th>
         <th>年级</th>
         <th>班级</th>
-        <th>报名时间</th>
         <th>备注</th>
         <th>操作</th>
     </thead>
@@ -143,7 +155,6 @@
             <td id="school_name">{{ student.school.school_name }}</td>
             <td id="grade">{{ student.temp_class }}</td>
             <td id="class_name">{{ student.class_name }}</td>
-            <td id="register">{{ student.register_date }}</td>
             <td id="remark">{{ student.remark }}</td>
 
             <td class="td-manage">

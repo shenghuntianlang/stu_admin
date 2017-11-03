@@ -168,8 +168,8 @@ def admin_stu_manager(request):
 
     page_index = request.GET['page_index']
     is_new = request.GET['is_new']
-
     stu = admin_get_student(page_index, is_new)
+    schools = School.objects.filter(is_delete=2)
 
     # 页面展示的范围
     page_range = stu[0].page_range
@@ -178,6 +178,7 @@ def admin_stu_manager(request):
                'courses': get_courses(),
                'limit': stu[2],
                'total': stu[3].count(),
+               'schools': schools,
                'page_index': page_index,
                'page_range': page_range,
                'max_page': len(page_range),
@@ -227,6 +228,7 @@ def admin_search_stu(request):
     is_new = request.GET['is_new']
 
     search_params = admin_get_search_stus_params(request)
+    schools = School.objects.filter(is_delete=2)
 
     # print(is_new)
 
@@ -249,6 +251,7 @@ def admin_search_stu(request):
                'courses': get_courses(),
                'search_params': search_params,
                'total': students.count(),
+               'schools': schools,
                'is_new': int(is_new),
                'is_search': True}
 
@@ -1553,7 +1556,7 @@ def create_students_table(students):
     wbk = xlwt.Workbook('utf-8')
     sheet1 = wbk.add_sheet('Sheet1', cell_overwrite_ok=True)
 
-    header = ['学号', '姓名', '性别', '班次', '电话', '就读小学', '年级', '班级']
+    header = ['学号', '姓名', '性别', '班次', '电话', '就读小学', '年级', '班级', '备注']
 
     # 设置表格单元格的宽度
     sheet1.col(0).width = 256 * 8
@@ -1564,6 +1567,7 @@ def create_students_table(students):
     sheet1.col(5).width = 256 * 15
     sheet1.col(6).width = 256 * 8
     sheet1.col(7).width = 256 * 8
+    sheet1.col(8).width = 256 * 40
 
     style_title = xlwt.easyxf('font:height 220;')  # 36pt,类型小初的字号
     alignment_title = xlwt.Alignment()  # Create Alignment
@@ -1585,6 +1589,7 @@ def create_students_table(students):
         # 当前学生所在的年级需要单独计算
         sheet1.write(line, 6, s.temp_class, style_title)
         sheet1.write(line, 7, s.class_name, style_title)
+        sheet1.write(line, 8, s.remark, style_title)
         line += 1
 
     table_name = str(time.time()) + ".xls"
