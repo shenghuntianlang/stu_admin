@@ -41,11 +41,11 @@
     <form class="layui-form  x-so">
 
 
-        <label class="layui-label">&nbsp;&nbsp;班级名:&nbsp;&nbsp; </label>
+        <label class="layui-label">&nbsp;&nbsp;教室名:&nbsp;&nbsp; </label>
         <input type="text" name="class_name" placeholder="请填写班级名称" value=""
                autocomplete="off" class="layui-input" lay-verify="required">
 
-        <label class="layui-label">班级所在校区:&nbsp;&nbsp;</label>
+        <label class="layui-label">教室所在校区:&nbsp;&nbsp;</label>
         <div class="layui-input-inline">
             <select name="school_id" lay-verify="required">
                 {% for school in schools %}
@@ -75,11 +75,11 @@
     <form class="layui-form  x-so" METHOD="get" ACTION="/admin_search_classroom/" accept-charset="UTF-8">
 
 
-        <label class="layui-label">&nbsp;&nbsp;班级名:&nbsp;&nbsp; </label>
+        <label class="layui-label">&nbsp;&nbsp;教室名:&nbsp;&nbsp; </label>
         <input type="text" name="name" placeholder="按照班级名查询" value="{{ search_params.name__contains }}"
                autocomplete="off" class="layui-input">
 
-        <label class="layui-label">班级所在校区:&nbsp;&nbsp;</label>
+        <label class="layui-label">教室所在校区:&nbsp;&nbsp;</label>
         <div class="layui-input-inline">
             <select name="school_id" lay-verify="required">
 
@@ -131,8 +131,8 @@
             <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i
                     class="layui-icon">&#xe605;</i></div>
         </th>
-        <th>班级号</th>
-        <th>班级名</th>
+        <th>教室号</th>
+        <th>教室名</th>
         <th>座位数</th>
         <th>所在校区</th>
         <th>备注</th>
