@@ -196,9 +196,9 @@ def admin_get_student(page_index, is_new):
     :return: 返回一个元组包含与学生相关信息
     """
     if is_new == '1':
-        students = Student.objects.filter(is_delete=0).filter(course_id=7)
+        students = Student.objects.filter(is_delete=0).filter(course_id=7).order_by('id')
     else:
-        students = Student.objects.filter(is_delete=0)
+        students = Student.objects.filter(is_delete=0).order_by('id')
 
     paginator = Paginator(students, limit)
     # 当前页面的内容
@@ -237,7 +237,7 @@ def admin_search_stu(request):
 
     # print(search_params)
 
-    students = Student.objects.filter(**search_params)
+    students = Student.objects.filter(**search_params).order_by('id')
     for s in students:
         if s.register_date != None:
             s.register_date = s.register_date.strftime("%Y-%m-%d")
