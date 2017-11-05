@@ -70,21 +70,21 @@
         <input type="number" name="phone" placeholder="手机号码" value="{{ search_params.phone__contains }}"
                autocomplete="off" class="layui-input">
         <label class="layui-label">&nbsp;&nbsp;学校:&nbsp;&nbsp; </label>
-            <div class="layui-input-inline">
-                <select name="school_name" lay-search lay-verify="required">
+        <div class="layui-input-inline">
+            <select name="school_name" lay-search lay-verify="required">
 
-                    <option selected value=""></option>
-                    {% for school in schools %}
+                <option selected value=""></option>
+                {% for school in schools %}
 
-                        {% if school.school_name == search_params.school__school_name__contains %}
-                            <option selected value={{ school.school_name }}>{{ school.school_name }}</option>
-                        {% else %}
-                            <option value={{ school.school_name }}>{{ school.school_name }}</option>
-                        {% endif %}
+                    {% if school.school_name == search_params.school__school_name__contains %}
+                        <option selected value={{ school.school_name }}>{{ school.school_name }}</option>
+                    {% else %}
+                        <option value={{ school.school_name }}>{{ school.school_name }}</option>
+                    {% endif %}
 
-                    {% endfor %}
-                </select>
-            </div>
+                {% endfor %}
+            </select>
+        </div>
 
 
         <label class="layui-label">&nbsp;&nbsp;年级:&nbsp;&nbsp; </label>
@@ -173,6 +173,7 @@
                    href="javascript:;">
                     <i class="layui-icon">&#xe642;</i>
                 </a>
+
                 <a title="删除" onclick="member_del(this,{{ student.id }})" href="javascript:;">
                     <i class="layui-icon">&#xe640;</i>
                 </a>
@@ -203,32 +204,37 @@
         });
     });
 
-    layui.use('laypage', function () {
 
-        var laypage = layui.laypage;
+    {% if is_search == False %}
+        layui.use('laypage', function () {
 
-        //执行一个laypage实例
-        laypage.render({
+            var laypage = layui.laypage;
 
-            elem: 'page'
-            , count: {{ total }}
-            , limit: {{ limit }}
-            , curr: {{ page_index }}
-            , jump: function (obj, first) {
+            //执行一个laypage实例
+            laypage.render({
 
-                if (!first) {
+                elem: 'page'
+                , count: {{ total }}
+                , limit: {{ limit }}
+                , curr: {{ page_index }}
+                , jump: function (obj, first) {
 
-                    window.location.href = '/admin_stu_manager/?page_index=' + obj.curr + '&is_new={{ is_new }}';
+                    if (!first) {
+
+                        window.location.href = '/admin_stu_manager/?page_index=' + obj.curr + '&is_new={{ is_new }}';
+
+                    }
+
 
                 }
 
+            })
 
-            }
 
         })
 
+    {% endif %}
 
-    })
 
 
     /* 用户-删除*/
