@@ -228,6 +228,9 @@ def admin_search_stu(request):
     is_new = request.GET['is_new']
 
     search_params = admin_get_search_stus_params(request)
+
+    print(search_params)
+
     schools = School.objects.filter(is_delete=2)
 
     # print(is_new)
@@ -235,9 +238,16 @@ def admin_search_stu(request):
     if int(is_new) == 1:
         search_params['course_id'] = 7
 
-    # print(search_params)
+    print(search_params)
+    print(search_params.__len__())
 
-    students = Student.objects.filter(**search_params).order_by('id')
+    if search_params.__len__() == 3 and search_params.keys().__contains__('school_id'):
+        students = Student.objects.filter(**search_params).order_by('temp_class')
+        print("按照年级的顺序排序")
+    else:
+        students = Student.objects.filter(**search_params).order_by('id')
+        print("按照学号排序")
+
     for s in students:
         if s.register_date != None:
             s.register_date = s.register_date.strftime("%Y-%m-%d")
@@ -276,7 +286,7 @@ def admin_get_search_stus_params(request):
             elif key == 'temp_class':
                 search_params[key] = value
             elif key == 'school_name':
-                search_params['school__school_name__contains'] = value
+                search_params['school_id'] = int(value)
             else:
                 search_params[key + "__contains"] = value
     search_params['is_delete'] = 0

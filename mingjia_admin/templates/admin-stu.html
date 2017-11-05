@@ -76,10 +76,10 @@
                 <option selected value=""></option>
                 {% for school in schools %}
 
-                    {% if school.school_name == search_params.school__school_name__contains %}
-                        <option selected value={{ school.school_name }}>{{ school.school_name }}</option>
+                    {% if school.id == search_params.school_id %}
+                        <option selected value={{ school.id }}>{{ school.school_name }}</option>
                     {% else %}
-                        <option value={{ school.school_name }}>{{ school.school_name }}</option>
+                        <option value={{ school.id }}>{{ school.school_name }}</option>
                     {% endif %}
 
                 {% endfor %}
