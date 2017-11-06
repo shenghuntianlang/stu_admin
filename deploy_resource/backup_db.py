@@ -43,7 +43,7 @@ def sendEmail():
     user = '1052060838@qq.com'
     pwd = 'ubcgouydtoznbeag'
     # 接受者的邮箱地址
-    receiver = '1052060838@qq.com'
+    receiver = '80245510@qq.com'
 
     msg = MIMEMultipart()
     msg['Subject'] = subject
@@ -133,10 +133,10 @@ def calculate_grade(entrance_time):
 
 
 if __name__ == "__main__":
-    # while True:
-    current_time = time.localtime(time.time())
-    # 早上八点钟进行登录
-    if ((current_time.tm_hour == 11) and (current_time.tm_min == 0) and (current_time.tm_sec == 0)):
-        update_stu_grade()
-        # 数据库备份
-        sendEmail()
+     while True:
+    	current_time = time.localtime(time.time())    
+    	# 早上十一点钟进行登录
+    	if ((current_time.tm_hour == 11) and (current_time.tm_min == 20) and (current_time.tm_sec == 0)):
+        	update_stu_grade()
+        	# 数据库备份
+        	sendEmail()
