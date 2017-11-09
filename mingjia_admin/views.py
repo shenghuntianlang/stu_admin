@@ -235,7 +235,7 @@ def admin_search_stu(request):
 
     search_params = admin_get_search_stus_params(request)
 
-    print(search_params)
+    # print(search_params)
 
     schools = School.objects.filter(is_delete=2)
 
@@ -249,10 +249,10 @@ def admin_search_stu(request):
 
     if search_params.__len__() == 3 and search_params.keys().__contains__('school_id'):
         students = Student.objects.filter(**search_params).order_by('temp_class')
-        print("按照年级的顺序排序")
+        # print("按照年级的顺序排序")
     else:
         students = Student.objects.filter(**search_params).order_by('id')
-        print("按照学号排序")
+        # print("按照学号排序")
 
     for s in students:
         if s.register_date != None:
