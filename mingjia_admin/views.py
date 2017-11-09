@@ -120,21 +120,29 @@ def admin_add_stu_handle(request):
     student = Student()
 
     # 考虑出现重名的情况
-    student.name = student_info['student_name']
-    student.gender = student_info['sex']
-    student.phone = student_info['phone']
-    student.entrance_time = student_info['entrance_time']
-    student.school_id = student_info['school_name']
-    student.class_name = student_info['class_id']
-    student.course_id = student_info['course_id']
-    student.register_date = datetime.date.today()
-    student.remark = student_info['remark']
-    student.is_delete = 0
-    student.save()
+    phone = student_info['phone']
+
+    students = Student.objects.filter(phone=phone)
 
     resp = Response()
     resp.status = 200
     resp.result = 'success'
+    if students.__len__() == 0:
+        student.name = student_info['student_name']
+        student.gender = student_info['sex']
+        student.phone = phone
+        student.entrance_time = student_info['entrance_time']
+        student.school_id = student_info['school_name']
+        student.class_name = student_info['class_id']
+        student.course_id = student_info['course_id']
+        student.register_date = datetime.date.today()
+        student.remark = student_info['remark']
+        student.is_delete = 0
+        student.save()
+
+    else:
+
+        resp.remark = '录入的手机号码重复,请检查后重新录入！'
 
     # 班次id
     course_id = student_info['course_id']
@@ -142,16 +150,14 @@ def admin_add_stu_handle(request):
     # 当选择的班级不是暂无安排的时候才进行人数的判断
     if int(course_id) != 1:
         course = Course.objects.get(id=course_id)
-
         # 当前人数
         curr_num = Student.objects.all().filter(course_id=course_id).count()
         # print('当前人数-->', curr_num)
         # 这个班次总共可容纳的人数
         if course.class_field != None:
             places = course.class_field.places
-            if curr_num >= places:
-                resp.remark = "注意！！！当前班次可容纳的总人数为: " + str(places) + "人, 当前的报名人数为: " + str(curr_num) + "人, 请注意是否继续报名!"
-
+            if curr_num >= places:  # 仅用作提醒
+                resp.remark = "添加成功, 注意！！！当前班次可容纳的总人数为: " + str(places) + "人, 当前的报名人数为: " + str(curr_num) + "人, 请注意是否继续报名!"
     return HttpResponse(json.dumps(resp.__dict__, encoding='utf-8'), content_type='application/json')
 
 

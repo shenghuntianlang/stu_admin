@@ -110,8 +110,8 @@
                 <span class="x-red">*</span>联系方式
             </label>
             <div class="layui-input-inline">
-                <input type="text" id="phone" name="phone" required="" lay-verify="phone"
-                       autocomplete="off" class="layui-input">
+                <input type="number" id="phone" name="phone" required="" maxlength="12"
+                        class="layui-input">
             </div>
         </div>
 
@@ -191,7 +191,7 @@
 
                         } else {
 
-                            layer.alert("增加成功 \n" + data.remark, {icon: 6}, function (index) {
+                            layer.alert( data.remark, {icon: 6}, function (index) {
 
                                 layer.close(index)
 
